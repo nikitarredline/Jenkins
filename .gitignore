@@ -1,6 +1,5 @@
-target
-.idea
+target/
+.idea/
 *.iml
 conf.ini
-Jenkins.iml
-lib
+lib/
