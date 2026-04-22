@@ -10,7 +10,8 @@ def JENKINS_HOSTNAME = 'http://144.124.231.59'
 def JOBS_DIR = "./jobs"
 
 node() {
-    currentBuild.description = "<p style='color: red;'>Jobs uploader</p"
+
+    currentBuild.description = "<p style='color: red;'>Jobs uploader</p>"
 
     stage('Checkout') {
         checkout scm
@@ -18,21 +19,27 @@ node() {
 
     stage('Create conf.ini') {
         withCredentials([usernamePassword(credentialsId: "jenkins", usernameVariable: "user", passwordVariable: 'pass')]) {
-            sh """
-            cat > $CONF_FILE << EOF
+            sh '''
+            cat > config.ini << EOF
 [jenkins]
-url=$JENKINS_HOSTNAME/jenkins/
+url=''' + JENKINS_HOSTNAME + '''/jenkins/
 user=$user
 password=$pass
 
 [job_builder]
 recursive=True
 keep_descriptions=False
-EOF"""
+EOF
+            '''
         }
     }
 
-    stage('Deploy jobs to jenkins') {
-        sh "jenkins-jobs --conf $CONF_FILE --flush-cache update $JOBS_DIR"
+    stage('Run JJB in Docker') {
+        docker.image('python:3.11').inside {
+            sh '''
+                pip install jenkins-job-builder
+                jenkins-jobs --conf config.ini --flush-cache update jobs/
+            '''
+        }
     }
 }
