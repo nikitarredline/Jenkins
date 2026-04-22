@@ -4,13 +4,13 @@ import groovy.transform.Field
 def CONF_FILE = "${WORKSPACE}"/config.ini
 
 @Field
-def JENKINS_HOSTNAME = 'http://188.130.251.59'
+def JENKINS_HOSTNAME = 'http://144.124.231.59'
 
 @Field
 def JOBS_DIR = "${WORKSPACE}/jobs"
 
 node() {
-    currentBuild.description = "<h3 style='color: red;'>Jobs uploader</h3"
+    currentBuild.description = "<p style='color: red;'>Jobs uploader</p"
 
     stage('Checkout') {
         checkout scm
