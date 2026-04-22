@@ -4,7 +4,6 @@
     scm:
       - git:
           url: https://github.com/nikitarredline/Jenkins
-          credentials-id: ssh_key
           branches:
             - FETCH_HEAD
           refspec: $REFSPEC
