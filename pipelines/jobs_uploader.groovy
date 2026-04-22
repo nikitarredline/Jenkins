@@ -1,13 +1,13 @@
 import groovy.transform.Field
 
 @Field
-def CONF_FILE = "${WORKSPACE}"/config.ini
+def CONF_FILE = "./config.ini"
 
 @Field
 def JENKINS_HOSTNAME = 'http://144.124.231.59'
 
 @Field
-def JOBS_DIR = "${WORKSPACE}/jobs"
+def JOBS_DIR = "./jobs"
 
 node() {
     currentBuild.description = "<p style='color: red;'>Jobs uploader</p"
