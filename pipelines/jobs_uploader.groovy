@@ -11,6 +11,9 @@ def JOBS_DIR = "./jobs"
 
 node() {
 
+    sh 'docker --version'
+    sh 'docker ps'
+
     currentBuild.description = "<p style='color: red;'>Jobs uploader</p>"
 
     stage('Checkout') {
