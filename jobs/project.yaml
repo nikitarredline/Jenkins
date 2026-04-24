@@ -1,6 +1,5 @@
----
 - project:
-    name: test_name
-    project-type: pipeline
+    name: ci_project
+
     jobs:
       - jobs_uploader
