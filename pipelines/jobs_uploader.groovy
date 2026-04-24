@@ -8,8 +8,8 @@ pipeline {
                 sh '''
                     set -e
                     echo "WORKSPACE=$WORKSPACE"
-                    ls -la "$WORKSPACE"
-                    ls -la "$WORKSPACE/jobs" || true
+                    ls -la $WORKSPACE
+                    ls -la $WORKSPACE/jobs || true
                 '''
             }
         }
@@ -25,7 +25,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        cat > "$WORKSPACE/config.ini" <<EOF
+                        cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -36,8 +36,7 @@ recursive=True
 keep_descriptions=False
 EOF
 
-                        echo "config.ini created"
-                        ls -la "$WORKSPACE/config.ini"
+                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
@@ -47,100 +46,11 @@ EOF
             steps {
                 sh '''
                     set -e
-                    echo "Testing docker mount..."
+                    echo "Testing mount..."
 
                     docker run --rm \
-                      -v "$WORKSPACE:/workspace" \
+                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
                       alpine ls -la /workspace
-                '''
-            }
-        }
-
-        stage('DOCKER MOUNT TEST') {
-            steps {
-                sh '''
-                    set -e
-
-                    echo "WORKSPACE = $WORKSPACE"
-                    ls -la "$WORKSPACE"
-
-                    docker run --rm \
-                      -v "$WORKSPACE:/workspace" \
-                      alpine ls -la /workspace
-                '''
-            }
-        }
-
-        stage('DEBUG HOST PATH') {
-            steps {
-                sh '''
-                    set -e
-
-                    echo "REAL PATH TEST"
-                    pwd
-                    readlink -f "$WORKSPACE" || true
-
-                    docker run --rm \
-                      -v "$(pwd):/workspace" \
-                      alpine ls -la /workspace
-                '''
-            }
-        }
-
-        stage('MOUNT DEBUG') {
-            steps {
-                sh '''
-                    set -e
-
-                    echo "HOST WORKSPACE:"
-                    ls -la "$WORKSPACE"
-
-                    echo "DOCKER TEST:"
-                    docker run --rm \
-                      -v "$WORKSPACE:/mnt" \
-                      alpine ls -la /mnt
-
-                    echo "CHECK JOBS INSIDE MOUNT:"
-                    docker run --rm \
-                      -v "$WORKSPACE:/mnt" \
-                      alpine ls -la /mnt/jobs || true
-                '''
-            }
-        }
-
-        stage('DOCKER DIAG') {
-            steps {
-                sh '''
-                    set -e
-
-                    echo "DOCKER INFO"
-                    docker info || true
-
-                    echo "WHO AM I"
-                    whoami
-
-                    echo "WORKSPACE REAL"
-                    ls -la "$WORKSPACE"
-
-                    echo "RAW MOUNT TEST"
-                    docker run --rm \
-                      -v "$WORKSPACE:/test" \
-                      alpine ls -la /test || true
-                '''
-            }
-        }
-
-        stage('REAL HOST PATH') {
-            steps {
-                sh '''
-                    echo "JENKINS WORKSPACE INSIDE CONTEXT:"
-                    pwd
-
-                    echo "ENV:"
-                    env | sort | grep WORKSPACE || true
-
-                    echo "MOUNTS:"
-                    cat /proc/self/mounts | grep workspace || true
                 '''
             }
         }
@@ -148,27 +58,24 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
-            set -e
+                    set -e
 
-            echo "HOST WORKSPACE=$WORKSPACE"
-            ls -la "$WORKSPACE/jobs"
+                    docker run --rm \
+                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -w /workspace \
+                      jenkins-agent-python:1.0 bash -c "
+                        set -e
 
-            docker run --rm \
-              -v "$WORKSPACE:/workspace:rw" \
-              -w /workspace \
-              jenkins-agent-python:1.0 bash -c "
-                set -e
+                        echo INSIDE CONTAINER
+                        pwd
+                        ls -la jobs
 
-                echo INSIDE CONTAINER
-                pwd
-                ls -la jobs
+                        python --version
+                        jenkins-jobs --version
 
-                python --version
-                jenkins-jobs --version
-
-                jenkins-jobs --conf config.ini update jobs/
-              "
-        '''
+                        jenkins-jobs --conf config.ini update jobs/
+                      "
+                '''
             }
         }
     }
