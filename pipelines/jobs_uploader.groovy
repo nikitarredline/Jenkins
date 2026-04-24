@@ -18,18 +18,18 @@ node() {
                 passwordVariable: "PASS"
         )]) {
 
-            sh """
+            sh '''
 cat > config.ini <<EOF
 [jenkins]
-url=${JENKINS_URL}
-user=${USER}
-password=${PASS}
+url=http://89.124.113.71/jenkins/
+user=$USER
+password=$PASS
 
 [job_builder]
 recursive=True
 keep_descriptions=False
 EOF
-"""
+'''
         }
     }
 
@@ -41,6 +41,15 @@ EOF
             echo "=== JOBS DIR ==="
             ls -la jobs
         '''
+    }
+
+    stage('Debug host config') {
+        sh '''
+        echo "=== HOST ==="
+        pwd
+        ls -la config.ini
+        cat config.ini
+    '''
     }
 
     stage('Run Jenkins Job Builder') {
