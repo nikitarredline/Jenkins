@@ -36,14 +36,16 @@ EOF
 
     stage('Run JJB') {
         sh '''
-        docker run --rm \
-          -v $WORKSPACE:/workspace \
-          -w /workspace \
-          python:3.11 bash -c "
-            pip install --upgrade pip setuptools wheel &&
-            pip install jenkins-job-builder &&
-            jenkins-jobs --conf config.ini update jobs/
-          "
+        apt-get update -y
+        apt-get install -y python3 python3-pip python3-venv
+
+        python3 -m venv venv
+        . venv/bin/activate
+
+        pip install --upgrade pip setuptools wheel
+        pip install jenkins-job-builder
+
+        jenkins-jobs --conf config.ini update jobs/
     '''
     }
 }
