@@ -47,16 +47,17 @@ EOF
     }
 
     stage('Run JJB') {
-        sh '''
+        sh """
     docker run --rm \
-      -v $WORKSPACE:/workspace \
+      -v ${env.WORKSPACE}:/workspace \
       -w /workspace \
-      python:3.10 bash -c "
+      python:3.10 bash -c '
         set -e
-        pip install --no-cache-dir jenkins-job-builder==5.0.3 &&
-        ls -R jobs &&
+        pwd
+        ls -R
+        pip install jenkins-job-builder==5.0.3
         jenkins-jobs --conf config.ini update jobs/
-      "
-    '''
+      '
+    """
     }
 }
