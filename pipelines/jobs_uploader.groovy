@@ -37,18 +37,10 @@ EOF
     stage('Run JJB') {
         sh '''
         apt-get update -y
-        apt-get install -y git curl build-essential libssl-dev zlib1g-dev \
-            libbz2-dev libreadline-dev libsqlite3-dev wget llvm \
-            libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+        apt-get install -y python3 python3-venv python3-pip
 
-        curl https://pyenv.run | bash
-
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init -)"
-        eval "$(pyenv virtualenv-init -)"
-
-        pyenv install 3.10.14
-        pyenv global 3.10.14
+        python3 -m venv venv
+        . venv/bin/activate
 
         pip install --upgrade pip setuptools wheel
         pip install jenkins-job-builder==5.0.3
