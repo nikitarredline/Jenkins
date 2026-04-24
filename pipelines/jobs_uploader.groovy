@@ -60,41 +60,37 @@ EOF
                 sh '''
             set -e
 
-            echo "=== JENKINS WORKSPACE ==="
-            echo $WORKSPACE
-            ls -la $WORKSPACE
+            echo "=== DOCKER MOUNT RESOLUTION ==="
 
-            echo "=== DETECT HOST PATH ==="
+            CONTAINER_ID=$(hostname)
 
-            # ВАЖНО: хардкодим или вычисляем правильный путь
-            HOST_WS="/root/jenkins_home/workspace/jobs_uploader"
+            echo "JENKINS CONTAINER: $CONTAINER_ID"
+
+            HOST_WS=$(docker inspect $CONTAINER_ID \
+                --format='{{ range .Mounts }}{{ if eq .Destination "/var/jenkins_home" }}{{ .Source }}{{ end }}{{ end }}')/workspace/jobs_uploader
+
+            echo "RESOLVED HOST_WS=$HOST_WS"
 
             if [ ! -d "$HOST_WS" ]; then
-                echo "ERROR: HOST_WS not found: $HOST_WS"
+                echo "ERROR: workspace not found on host"
                 exit 1
             fi
 
-            echo "HOST_WS=$HOST_WS"
             ls -la "$HOST_WS"
 
-            echo "=== DOCKER RUN ==="
+            echo "=== RUN DOCKER ==="
 
             docker run --rm \
               -v "$HOST_WS:/workspace" \
               -w /workspace \
               python:3.10 bash -c '
                 set -e
-
                 echo "INSIDE CONTAINER"
-                pwd
                 ls -la
 
                 echo "CONFIG CHECK"
                 ls -la config.ini
                 cat config.ini
-
-                echo "JOBS"
-                ls -la jobs
 
                 pip install --no-cache-dir jenkins-job-builder==5.0.3
 
