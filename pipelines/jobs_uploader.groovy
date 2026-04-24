@@ -130,6 +130,21 @@ EOF
             }
         }
 
+        stage('REAL HOST PATH') {
+            steps {
+                sh '''
+            echo "JENKINS WORKSPACE INSIDE CONTAINER:"
+            pwd
+
+            echo "TRY /proc/self/mounts"
+            cat /proc/self/mounts | grep workspace || true
+
+            echo "TRY ENV"
+            env | sort | grep WORKSPACE || true
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
