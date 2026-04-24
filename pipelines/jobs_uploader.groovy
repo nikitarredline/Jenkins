@@ -154,13 +154,13 @@ EOF
             ls -la "$WORKSPACE/jobs"
 
             docker run --rm \
-              -v "$WORKSPACE:/workspace:rw" \
-              -w /workspace \
+              -v "$WORKSPACE:$WORKSPACE" \
+              -w "$WORKSPACE" \
               jenkins-agent-python:1.0 bash -c "
                 set -e
                 echo INSIDE CONTAINER
                 pwd
-                ls -la jobs
+                ls -la jobs || true
 
                 python --version
                 jenkins-jobs --version
