@@ -58,35 +58,49 @@ EOF
         stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
-                    set -e
+            set -e
 
-                    echo "=== DOCKER RUN ==="
+            echo "=== JENKINS WORKSPACE ==="
+            echo $WORKSPACE
+            ls -la $WORKSPACE
 
-                    docker run --rm \
-                      -v $WORKSPACE:/workspace \
-                      -w /workspace \
-                      python:3.10 bash -c '
-                        set -e
+            echo "=== DETECT HOST PATH ==="
 
-                        echo "INSIDE CONTAINER"
-                        pwd
-                        ls -la
+            # ВАЖНО: хардкодим или вычисляем правильный путь
+            HOST_WS="/root/jenkins_home/workspace/jobs_uploader"
 
-                        echo "CONFIG CHECK"
-                        ls -la config.ini
-                        cat config.ini
+            if [ ! -d "$HOST_WS" ]; then
+                echo "ERROR: HOST_WS not found: $HOST_WS"
+                exit 1
+            fi
 
-                        echo "JOBS"
-                        ls -la jobs
+            echo "HOST_WS=$HOST_WS"
+            ls -la "$HOST_WS"
 
-                        python --version
+            echo "=== DOCKER RUN ==="
 
-                        pip install --no-cache-dir jenkins-job-builder==5.0.3
+            docker run --rm \
+              -v "$HOST_WS:/workspace" \
+              -w /workspace \
+              python:3.10 bash -c '
+                set -e
 
-                        jenkins-jobs --version
-                        jenkins-jobs --conf config.ini update jobs/
-                      '
-                '''
+                echo "INSIDE CONTAINER"
+                pwd
+                ls -la
+
+                echo "CONFIG CHECK"
+                ls -la config.ini
+                cat config.ini
+
+                echo "JOBS"
+                ls -la jobs
+
+                pip install --no-cache-dir jenkins-job-builder==5.0.3
+
+                jenkins-jobs --conf config.ini update jobs/
+              '
+        '''
             }
         }
     }
