@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "python:3.10"
+        DOCKER_IMAGE = "python:3.10"
     }
 
     stages {
@@ -13,15 +13,45 @@ pipeline {
             }
         }
 
+        stage('Create config.ini') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-creds', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
+                    sh '''
+                        set -e
+
+                        echo "=== CREATE config.ini ==="
+
+                        cat > config.ini <<EOF
+[jenkins]
+url=http://89.124.113.71/jenkins/
+user=${JENKINS_USER}
+password=${JENKINS_PASS}
+
+[job_builder]
+recursive=True
+keep_descriptions=False
+EOF
+
+                        echo "=== CONFIG CREATED ==="
+                        ls -la config.ini
+                        cat config.ini
+                    '''
+                }
+            }
+        }
+
         stage('Host debug') {
             steps {
                 sh '''
-                    echo "=== HOST INFO ==="
+                    echo "=== HOST DEBUG ==="
                     echo "WORKSPACE=$WORKSPACE"
+
                     ls -la $WORKSPACE
-                    echo "CONFIG:"
+
+                    echo "=== CHECK CONFIG ON HOST ==="
                     cat $WORKSPACE/config.ini
-                    echo "JOBS:"
+
+                    echo "=== CHECK JOBS DIR ==="
                     ls -la $WORKSPACE/jobs
                 '''
             }
@@ -32,7 +62,7 @@ pipeline {
                 sh '''
                     set -e
 
-                    echo "=== RUN DOCKER ==="
+                    echo "=== START DOCKER ==="
 
                     docker run --rm \
                       -v "$WORKSPACE:/workspace" \
@@ -45,11 +75,10 @@ pipeline {
                         pwd
                         ls -la
 
-                        echo "=== CHECK CONFIG ==="
+                        echo "=== VERIFY FILES ==="
                         ls -la config.ini
                         cat config.ini
 
-                        echo "=== CHECK JOBS ==="
                         ls -la jobs
 
                         echo "=== PYTHON VERSION ==="
@@ -71,7 +100,10 @@ pipeline {
 
     post {
         always {
-            sh 'echo "BUILD FINISHED"'
+            sh '''
+                echo "=== PIPELINE FINISHED ==="
+                ls -la $WORKSPACE
+            '''
         }
     }
 }
