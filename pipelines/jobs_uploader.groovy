@@ -35,11 +35,9 @@ EOF
     }
 
     stage('Run JJB in Docker') {
-        docker.image('python:3.11').inside {
-            sh '''
-                pip install jenkins-job-builder
-                jenkins-jobs --conf config.ini update jobs/
-            '''
-        }
+        sh '''
+            pip3 install jenkins-job-builder
+            jenkins-jobs --conf config.ini update jobs/
+        '''
     }
 }
