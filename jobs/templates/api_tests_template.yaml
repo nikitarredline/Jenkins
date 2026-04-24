@@ -1,0 +1,11 @@
+- job-template:
+    name: QA/api_tests
+    project-type: freestyle
+
+    scm:
+      - api_tests_scm
+
+    builders:
+      - shell: |
+          echo "RUN API TESTS"
+          mvn clean test

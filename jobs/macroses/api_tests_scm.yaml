@@ -1,0 +1,7 @@
+- scm:
+    name: api_tests_scm
+    scm:
+      - git:
+          url: https://github.com/nikitarredline/RestAssuredHomework
+          branches:
+            - '*/main'

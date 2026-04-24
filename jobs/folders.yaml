@@ -1,0 +1,7 @@
+- job:
+    name: DevOps
+    project-type: folder
+
+- job:
+    name: QA
+    project-type: folder
