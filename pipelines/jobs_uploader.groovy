@@ -46,17 +46,11 @@ EOF
     '''
     }
 
-    sh """
-docker run --rm \
-  -v \$PWD:/workspace \
-  -w /workspace \
-  python:3.10 bash -c "
-    set -e
-    pwd
-    ls -la
-    ls -la jobs
+    stage('Run JJB') {
+        sh '''
+    python3 --version
     pip install jenkins-job-builder==5.0.3
     jenkins-jobs --conf config.ini update jobs/
-  "
-"""
+    '''
+    }
 }
