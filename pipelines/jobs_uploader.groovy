@@ -36,10 +36,11 @@ EOF
 
     stage('Run JJB') {
         sh '''
-        apt-get update || true
-        apt-get install -y python3 python3-pip || true
+        python3 -m venv venv
+        . venv/bin/activate
 
-        pip3 install jenkins-job-builder
+        pip install --upgrade pip
+        pip install jenkins-job-builder
 
         jenkins-jobs --conf config.ini update jobs/
     '''
