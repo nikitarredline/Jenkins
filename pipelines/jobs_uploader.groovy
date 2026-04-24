@@ -46,20 +46,17 @@ EOF
     '''
     }
 
-    stage('Run JJB') {
-        sh """
-    docker run --rm \
-      -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
-      -w /workspace \
-      python:3.10 bash -c "
-        set -e
-        echo '=== INSIDE CONTAINER ==='
-        pwd
-        ls -la
-        ls -la jobs
-        pip install jenkins-job-builder==5.0.3
-        jenkins-jobs --conf config.ini update jobs/
-      "
-    """
-    }
+    sh """
+docker run --rm \
+  -v \$PWD:/workspace \
+  -w /workspace \
+  python:3.10 bash -c "
+    set -e
+    pwd
+    ls -la
+    ls -la jobs
+    pip install jenkins-job-builder==5.0.3
+    jenkins-jobs --conf config.ini update jobs/
+  "
+"""
 }
