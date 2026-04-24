@@ -48,24 +48,16 @@ EOF
                 sh '''
             set -e
 
-            echo "=== CHECK SYSTEM PYTHON ==="
-            python3 --version
+            docker run --rm \
+              -v $WORKSPACE:/workspace \
+              -w /workspace \
+              python:3.11 bash -c "
+                set -e
 
-            echo "=== INSTALL PYTHON 3.11 VENV (safe) ==="
-            python3 -m venv venv
-            . venv/bin/activate
+                pip install --no-cache-dir jenkins-job-builder==5.0.3
 
-            echo "=== FORCE PIP UPDATE ==="
-            pip install --upgrade pip setuptools wheel
-
-            echo "=== INSTALL COMPATIBLE JJB ==="
-            pip install "jenkins-job-builder==5.0.3"
-
-            echo "=== VERIFY JJB ==="
-            jenkins-jobs --version
-
-            echo "=== RUN UPDATE ==="
-            jenkins-jobs --conf config.ini update jobs/
+                jenkins-jobs --conf config.ini update jobs/
+              "
         '''
             }
         }
