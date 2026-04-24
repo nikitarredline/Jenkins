@@ -14,7 +14,11 @@ node() {
     currentBuild.description = "<p style='color: red;'>Jobs uploader</p>"
 
     stage('Checkout') {
-        checkout scm
+        checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                userRemoteConfigs: [[url: 'https://github.com/nikitarredline/Jenkins']]
+        ])
     }
 
     stage('Create config.ini') {
