@@ -3,20 +3,25 @@ pipeline {
 
     stages {
 
-        stage('DEBUG - CHECK WORKSPACE') {
+        stage('CLEAN + CHECKOUT') {
+            steps {
+                cleanWs()
+
+                checkout scm
+
+                sh '''
+                    echo "=== AFTER CHECKOUT ==="
+                    ls -R .
+                '''
+            }
+        }
+
+        stage('DEBUG JOBS') {
             steps {
                 sh '''
-                    set -e
-
-                    echo "=== HOST INFO ==="
-                    hostname
-
-                    echo "=== WORKSPACE ==="
-                    echo $WORKSPACE
-                    ls -la $WORKSPACE
-
-                    echo "=== JOBS DIR ==="
-                    ls -la $WORKSPACE/jobs || echo "❌ NO JOBS DIRECTORY"
+                    echo "=== CHECK JOBS ==="
+                    ls -la jobs
+                    find jobs -type f -name "*.yaml"
                 '''
             }
         }
@@ -30,9 +35,7 @@ pipeline {
                 )]) {
 
                     sh '''
-                        set -e
-
-                        cat > $WORKSPACE/config.ini <<EOF
+cat > config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -42,19 +45,14 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
-
-                        echo "CONFIG CREATED"
-                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('RUN JJB IN DOCKER') {
+        stage('RUN JJB') {
             steps {
                 sh '''
-                    set -e
-
                     docker run --rm \
                         -v $WORKSPACE:/workspace \
                         -w /workspace \
@@ -63,18 +61,10 @@ EOF
                             set -e
 
                             echo '=== INSIDE CONTAINER ==='
-                            ls -la
+                            ls -R
 
-                            echo '=== CHECK JOBS ==='
-                            ls -la jobs || echo '❌ NO JOBS IN CONTAINER'
-
-                            echo '=== PYTHON ==='
-                            python --version
-
-                            echo '=== JJB VERSION ==='
+                            echo '=== JJB RUN ==='
                             jenkins-jobs --version
-
-                            echo '=== RUN JJB ==='
                             jenkins-jobs --conf config.ini update jobs/
                         "
                 '''
