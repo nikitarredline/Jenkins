@@ -43,7 +43,7 @@ EOF
             ls -la &&
             pip install --upgrade pip setuptools wheel &&
             pip install jenkins-job-builder==5.0.3 &&
-            jenkins-jobs --conf config.ini update jobs/
+            jenkins-jobs --conf config.ini update .
           "
     '''
     }
