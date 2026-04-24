@@ -6,6 +6,7 @@ pipeline {
         stage('DEBUG NODE') {
             steps {
                 sh '''
+                    set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
                     ls -la
@@ -23,6 +24,8 @@ pipeline {
                     sh '''
                         set -e
 
+                        echo "=== CREATE config.ini ==="
+
                         cat > config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
@@ -36,6 +39,7 @@ EOF
 
                         echo "CONFIG CREATED"
                         ls -la config.ini
+                        cat config.ini
                     '''
                 }
             }
@@ -44,43 +48,64 @@ EOF
         stage('Host debug') {
             steps {
                 sh '''
-                    echo "HOST DEBUG"
+                    set -e
+
+                    echo "=== HOST DEBUG ==="
                     echo "WORKSPACE=$WORKSPACE"
 
-                    ls -la $WORKSPACE
+                    ls -la "$WORKSPACE"
                     ls -la jobs
                 '''
             }
         }
 
-        stage('Run JJB') {
+        stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
-            set -e
+                    set -e
 
-            REAL_WS=/var/jenkins_home/workspace/jobs_uploader
+                    echo "=== RESOLVED PATH (HOST) ==="
 
-            echo "REAL_WS=$REAL_WS"
-            ls -la $REAL_WS
+                    REAL_WS=/root/jenkins_home/workspace/jobs_uploader
 
-            docker run --rm \
-              -v $REAL_WS:/workspace \
-              -w /workspace \
-              python:3.10 bash -c '
-                set -e
+                    echo "REAL_WS=$REAL_WS"
 
-                echo "INSIDE"
-                ls -la
+                    if [ ! -d "$REAL_WS" ]; then
+                        echo "ERROR: REAL_WS not found on host"
+                        exit 1
+                    fi
 
-                echo "CONFIG"
-                ls -la config.ini
-                cat config.ini
+                    ls -la "$REAL_WS"
 
-                pip install --no-cache-dir jenkins-job-builder==5.0.3
+                    echo "=== DOCKER RUN ==="
 
-                jenkins-jobs --conf config.ini update jobs/
-              '
-        '''
+                    docker run --rm \
+                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -w /workspace \
+                      python:3.10 bash -c '
+                        set -e
+
+                        echo "=== INSIDE CONTAINER ==="
+                        pwd
+                        ls -la
+
+                        echo "=== CONFIG CHECK ==="
+                        ls -la config.ini
+                        cat config.ini
+
+                        echo "=== JOBS ==="
+                        ls -la jobs
+
+                        python --version
+
+                        pip install --no-cache-dir jenkins-job-builder==5.0.3
+
+                        jenkins-jobs --version
+
+                        echo "=== RUN JJB ==="
+                        jenkins-jobs --conf config.ini update jobs/
+                      '
+                '''
             }
         }
     }
@@ -88,7 +113,7 @@ EOF
     post {
         always {
             sh '''
-                echo "PIPELINE FINISHED"
+                echo "=== PIPELINE FINISHED ==="
                 ls -la
             '''
         }
