@@ -3,39 +3,38 @@ pipeline {
 
     stages {
 
-        stage('CLEAN + CHECKOUT') {
+        stage('DEBUG HOST') {
             steps {
-                cleanWs()
+                sh '''
+                    set -e
+                    echo "HOST=$(hostname)"
+                    echo "WORKSPACE=$WORKSPACE"
+                    ls -la $WORKSPACE
+                '''
+            }
+        }
 
+        stage('Checkout + VERIFY') {
+            steps {
                 checkout scm
 
                 sh '''
-                    echo "=== AFTER CHECKOUT ==="
-                    ls -R .
+                    set -e
+                    echo "=== CHECK JOBS ON HOST ==="
+                    ls -la jobs || echo "NO JOBS ON HOST"
                 '''
             }
         }
 
-        stage('DEBUG JOBS') {
-            steps {
-                sh '''
-                    echo "=== CHECK JOBS ==="
-                    ls -la jobs
-                    find jobs -type f -name "*.yaml"
-                '''
-            }
-        }
-
-        stage('CREATE config.ini') {
+        stage('Create config.ini') {
             steps {
                 withCredentials([usernamePassword(
                         credentialsId: 'jenkins',
                         usernameVariable: 'JENKINS_USER',
                         passwordVariable: 'JENKINS_PASS'
                 )]) {
-
                     sh '''
-cat > config.ini <<EOF
+cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -45,6 +44,8 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
+
+ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
@@ -53,26 +54,30 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
-            set -e
-
-            echo "WORKSPACE=$WORKSPACE"
-            ls -la $WORKSPACE
-
-            docker run --rm \
-                -v "$WORKSPACE:/workspace" \
-                -w /workspace \
-                jenkins-agent-python:1.0 \
-                bash -c "
                     set -e
 
-                    echo '=== INSIDE CONTAINER ==='
-                    ls -R /workspace
+                    echo "=== CHECK INSIDE CONTAINER ==="
 
-                    echo '=== JJB RUN ==='
-                    jenkins-jobs --version
-                    jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
-                "
-        '''
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            set -e
+                            echo 'INSIDE:'
+                            ls -la /workspace
+
+                            echo 'PYTHON:'
+                            python --version
+
+                            echo 'JJB:'
+                            which jenkins-jobs
+                            jenkins-jobs --version
+
+                            echo 'RUN UPDATE:'
+                            jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
+                        "
+                '''
             }
         }
     }
