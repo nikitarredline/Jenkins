@@ -46,18 +46,24 @@ EOF
         stage('Run JJB') {
             steps {
                 sh '''
-            set -e
+        set -e
 
-            docker run --rm \
-              -v $WORKSPACE:/workspace \
-              -w /workspace \
-              python:3.11 bash -c "
-                set -e
+        echo "=== WORKSPACE ==="
+        pwd
+        ls -la
 
-                pip install --no-cache-dir jenkins-job-builder==5.0.3
+        echo "=== CONFIG ==="
+        cat config.ini
 
-                jenkins-jobs --conf config.ini update jobs/
-              "
+        echo "=== CREATE VENV ==="
+        python3 -m venv venv
+        . venv/bin/activate
+
+        pip install --upgrade pip
+        pip install jenkins-job-builder==5.0.3
+
+        echo "=== RUN JJB ==="
+        jenkins-jobs --conf config.ini update jobs/
         '''
             }
         }
