@@ -50,6 +50,17 @@ EOF
         }
 
         stage('Run Jenkins Job Builder') {
+
+            sh '''
+    echo "HOST WORKSPACE:"
+    ls -la $WORKSPACE
+
+    echo "REAL PATH CHECK:"
+    realpath $WORKSPACE
+    '''
+        }
+
+        stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
                     set -e
@@ -85,12 +96,6 @@ EOF
             }
         }
     }
-
-    echo "HOST WORKSPACE:"
-    ls -la $WORKSPACE
-
-    echo "REAL PATH CHECK:"
-    realpath $WORKSPACE
 
     post {
         always {
