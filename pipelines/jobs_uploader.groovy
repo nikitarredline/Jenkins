@@ -9,6 +9,8 @@ pipeline {
                     set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
+                    ls -la $WORKSPACE
+                    ls -la $WORKSPACE/jobs || echo "NO JOBS DIR"
                     which docker || echo "DOCKER NOT FOUND"
                 '''
             }
@@ -25,7 +27,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        cat > config.ini <<EOF
+                        cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -43,47 +45,41 @@ EOF
         stage('Run JJB in Docker') {
             steps {
                 sh '''
-            set -e
-
-            echo "WORKSPACE is: $WORKSPACE"
-            ls -la $WORKSPACE
-
-            docker run --rm \
-                -v $WORKSPACE:/workspace \
-                -w /workspace \
-                jenkins-agent-python:1.0 \
-                bash -c "
                     set -e
 
-                    echo '=== INSIDE CONTAINER ==='
-                    pwd
-                    ls -la
+                    echo "=== CHECK WORKSPACE CONTENT ==="
+                    ls -la $WORKSPACE
+                    ls -la $WORKSPACE/jobs || echo "NO JOBS DIR"
 
-                    echo '=== PYTHON ==='
-                    python --version
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            set -e
+                            echo '=== INSIDE CONTAINER ==='
+                            ls -la
 
-                    echo '=== JJB ==='
-                    jenkins-jobs --version
+                            echo '=== PYTHON ==='
+                            python --version
 
-                    echo '=== JOBS DIR CHECK ==='
-                    ls -la jobs || echo 'NO JOBS DIR'
+                            echo '=== JJB ==='
+                            jenkins-jobs --version
 
-                    echo '=== YAML SEARCH ==='
-                    find . -name '*.yaml' -maxdepth 3 -print
+                            echo '=== SEARCH YAML ==='
+                            find . -name '*.yaml'
 
-                    echo '=== RUN JJB ==='
-                    jenkins-jobs --conf config.ini update jobs/
-                "
-        '''
+                            echo '=== RUN JJB ==='
+                            jenkins-jobs --conf config.ini update jobs/
+                        "
+                '''
             }
         }
     }
 
     post {
         always {
-            sh '''
-                echo "PIPELINE FINISHED"
-            '''
+            sh 'echo PIPELINE FINISHED'
         }
     }
 }
