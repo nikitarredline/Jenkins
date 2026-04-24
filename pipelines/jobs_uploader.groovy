@@ -9,7 +9,7 @@ pipeline {
                     set -e
                     echo "WORKSPACE=$WORKSPACE"
                     ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs
+                    ls -la $WORKSPACE/jobs || true
                 '''
             }
         }
@@ -23,7 +23,9 @@ pipeline {
                 )]) {
 
                     sh '''
-cat > $WORKSPACE/config.ini <<EOF
+                        set -e
+
+                        cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -33,18 +35,23 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
+
+                        echo "config.ini created"
+                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('VERIFY DOCKER MOUNT') {
+        stage('VERIFY DOCKER ACCESS') {
             steps {
                 sh '''
                     set -e
+
+                    echo "Testing docker mount..."
                     docker run --rm \
-                        -v $WORKSPACE:/workspace \
-                        alpine ls -R /workspace
+                      -v $WORKSPACE:/workspace \
+                      alpine ls -R /workspace
                 '''
             }
         }
@@ -52,28 +59,33 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
-            set -e
+                    set -e
 
-            echo "WORKSPACE=$WORKSPACE"
-            ls -la $WORKSPACE
-            ls -la $WORKSPACE/jobs
+                    echo "=== RUN JJB ==="
 
-            docker run --rm \
-              -v $WORKSPACE:/workspace \
-              -w /workspace \
-              jenkins-agent-python:1.0 \
-              bash -c "
-                set -e
-                echo INSIDE
-                ls -la
-                ls -la jobs
+                    docker run --rm \
+                      -v $WORKSPACE:/workspace \
+                      -w /workspace \
+                      jenkins-agent-python:1.0 \
+                      bash -c "
+                        set -e
 
-                python --version
-                jenkins-jobs --version
+                        echo INSIDE CONTAINER
+                        pwd
+                        ls -la
+                        ls -la jobs
 
-                jenkins-jobs --conf config.ini update jobs/
-              "
-        '''
+                        echo PYTHON:
+                        python --version
+
+                        echo JJB:
+                        which jenkins-jobs
+                        jenkins-jobs --version
+
+                        echo RUN UPDATE:
+                        jenkins-jobs --conf config.ini update jobs/
+                      "
+                '''
             }
         }
     }
