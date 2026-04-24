@@ -52,12 +52,18 @@ EOF
         stage('Run Jenkins Job Builder') {
 
             sh '''
-    echo "HOST WORKSPACE:"
-    ls -la $WORKSPACE
+    set -e
 
-    echo "REAL PATH CHECK:"
-    realpath $WORKSPACE
-    '''
+    echo "WORKSPACE=$WORKSPACE"
+
+    if [ -z "$WORKSPACE" ]; then
+        echo "WORKSPACE is EMPTY"
+        exit 1
+    fi
+
+    ls -la "$WORKSPACE"
+    realpath "$WORKSPACE"
+'''
         }
 
         stage('Run Jenkins Job Builder') {
