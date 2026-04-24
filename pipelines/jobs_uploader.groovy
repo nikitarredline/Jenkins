@@ -96,6 +96,7 @@ EOF
             ls -la /var/jenkins_home/workspace/jobs_uploader
 
             echo "DOCKER ROOT MOUNT TEST:"
+            
             docker run --rm \
               -v /var/jenkins_home/workspace/jobs_uploader:/mnt \
               alpine ls -la /mnt
@@ -111,16 +112,25 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
-        docker run --rm \
-          -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
-          -w /workspace \
-          jenkins-agent-python:1.0 bash -c "
             set -e
-            ls -la jobs
-            python --version
-            jenkins-jobs --version
-            jenkins-jobs --conf config.ini update jobs/
-          "
+
+            echo "WORKSPACE=$WORKSPACE"
+            ls -la $WORKSPACE/jobs
+
+            docker run --rm \
+              -v "$WORKSPACE:/workspace" \
+              -w /workspace \
+              jenkins-agent-python:1.0 bash -c "
+                set -e
+                echo INSIDE CONTAINER
+                pwd
+                ls -la jobs
+
+                python --version
+                jenkins-jobs --version
+
+                jenkins-jobs --conf config.ini update jobs/
+              "
         '''
             }
         }
