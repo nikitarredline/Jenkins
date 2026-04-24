@@ -3,20 +3,25 @@ pipeline {
 
     stages {
 
-        stage('DEBUG') {
+        stage('DEBUG - CHECK WORKSPACE') {
             steps {
                 sh '''
                     set -e
-                    echo "HOST=$(hostname)"
-                    echo "WORKSPACE=$WORKSPACE"
+
+                    echo "=== HOST INFO ==="
+                    hostname
+
+                    echo "=== WORKSPACE ==="
+                    echo $WORKSPACE
                     ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs || echo "NO JOBS DIR"
-                    which docker || echo "DOCKER NOT FOUND"
+
+                    echo "=== JOBS DIR ==="
+                    ls -la $WORKSPACE/jobs || echo "❌ NO JOBS DIRECTORY"
                 '''
             }
         }
 
-        stage('Create config.ini') {
+        stage('CREATE config.ini') {
             steps {
                 withCredentials([usernamePassword(
                         credentialsId: 'jenkins',
@@ -37,38 +42,42 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
+
+                        echo "CONFIG CREATED"
+                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('Run JJB in Docker') {
+        stage('RUN JJB IN DOCKER') {
             steps {
                 sh '''
-            set -e
-
-            echo "=== WORKSPACE CONTENT ==="
-            ls -R $WORKSPACE
-
-            docker run --rm \
-                -v $WORKSPACE:/workspace \
-                -w /workspace \
-                jenkins-agent-python:1.0 \
-                bash -c "
                     set -e
-                    echo '=== INSIDE CONTAINER ==='
-                    ls -R /workspace
 
-                    echo '=== PYTHON ==='
-                    python --version
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            set -e
 
-                    echo '=== JJB ==='
-                    jenkins-jobs --version
+                            echo '=== INSIDE CONTAINER ==='
+                            ls -la
 
-                    echo '=== RUN JJB ==='
-                    jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
-                "
-        '''
+                            echo '=== CHECK JOBS ==='
+                            ls -la jobs || echo '❌ NO JOBS IN CONTAINER'
+
+                            echo '=== PYTHON ==='
+                            python --version
+
+                            echo '=== JJB VERSION ==='
+                            jenkins-jobs --version
+
+                            echo '=== RUN JJB ==='
+                            jenkins-jobs --conf config.ini update jobs/
+                        "
+                '''
             }
         }
     }
