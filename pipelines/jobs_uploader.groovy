@@ -46,6 +46,14 @@ EOF
     '''
     }
 
+    stage('Check host Python') {
+        sh '''
+        echo "=== HOST PYTHON ==="
+        python3 --version || python --version
+        which python3 || which python
+    '''
+    }
+
     stage('Run JJB') {
         sh """
     docker run --rm \
