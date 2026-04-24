@@ -57,43 +57,37 @@ EOF
             }
         }
 
-        stage('Run Jenkins Job Builder') {
+        stage('Run JJB') {
             steps {
                 sh '''
-                    set -e
+            set -e
 
-                    echo "=== START DOCKER ==="
+            docker run --rm \
+              -v /tmp/jjb_workspace:/workspace \
+              -w /workspace \
+              python:3.10 bash -c '
 
-                    docker run --rm \
-                      -v "$WORKSPACE:/workspace" \
-                      -w /workspace \
-                      python:3.10 bash -c '
+                set -e
 
-                        set -e
+                echo "=== INSIDE ==="
+                pwd
+                ls -la
 
-                        echo "=== INSIDE CONTAINER ==="
-                        pwd
-                        ls -la
+                echo "CONFIG:"
+                ls -la config.ini
+                cat config.ini
 
-                        echo "=== VERIFY FILES ==="
-                        ls -la config.ini
-                        cat config.ini
+                echo "JOBS:"
+                ls -la jobs
 
-                        ls -la jobs
+                python --version
 
-                        echo "=== PYTHON VERSION ==="
-                        python --version
+                pip install --no-cache-dir jenkins-job-builder==5.0.3
 
-                        echo "=== INSTALL JJB ==="
-                        pip install --no-cache-dir jenkins-job-builder==5.0.3
-
-                        echo "=== JJB VERSION ==="
-                        jenkins-jobs --version
-
-                        echo "=== RUN UPDATE ==="
-                        jenkins-jobs --conf config.ini update jobs/
-                      '
-                '''
+                jenkins-jobs --version
+                jenkins-jobs --conf config.ini update jobs/
+              '
+        '''
             }
         }
     }
