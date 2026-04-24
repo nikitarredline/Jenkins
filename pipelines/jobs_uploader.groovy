@@ -75,14 +75,16 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
+        docker run --rm \
+          -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
+          -w /workspace \
+          jenkins-agent-python:1.0 bash -c "
             set -e
-
-            echo "RUNNING JJB DIRECTLY IN JENKINS"
-
             ls -la jobs
-
+            python --version
             jenkins-jobs --version
             jenkins-jobs --conf config.ini update jobs/
+          "
         '''
             }
         }
