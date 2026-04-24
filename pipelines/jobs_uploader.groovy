@@ -72,6 +72,21 @@ EOF
             }
         }
 
+        stage('DEBUG HOST PATH') {
+            steps {
+                sh '''
+            echo "REAL PATH TEST"
+
+            pwd
+            readlink -f $WORKSPACE || true
+
+            docker run --rm \
+              -v $(pwd):/workspace \
+              alpine ls -la /workspace
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
