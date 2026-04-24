@@ -2,7 +2,6 @@ pipeline {
     agent {
         docker {
             image 'jenkins-agent-python:1.0'
-            args '-u jenkins'
         }
     }
 
@@ -49,14 +48,17 @@ EOF
             }
         }
 
-        stage('Run JJB') {
-            steps {
-                sh '''
+        stages {
+            stage('Run JJB') {
+                steps {
+                    sh '''
                     set -e
+                    python --version
+                    jenkins-jobs --version
 
-                    echo "=== RUN JJB ==="
                     jenkins-jobs --conf config.ini update jobs/
                 '''
+                }
             }
         }
     }
