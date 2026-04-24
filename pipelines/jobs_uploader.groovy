@@ -22,7 +22,7 @@ node() {
             sh '''
             cat > config.ini << EOF
 [jenkins]
-url=http://144.124.231.59/jenkins/
+url=http://89.124.113.71/jenkins/
 user=$user
 password=$pass
 
