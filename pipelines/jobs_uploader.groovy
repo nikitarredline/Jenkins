@@ -38,18 +38,19 @@ EOF
         }
     }
 
+    stage('Debug') {
+        sh 'ls -R'
+    }
+
     stage('Run JJB') {
-        sh """
+        sh '''
         docker run --rm \
-        -v ${WORKSPACE}:/workspace \
-        -w /workspace \
-        python:3.10 bash -c '
-            set -e
-            ls -R
-            cat jobs/*.yaml
-            pip install jenkins-job-builder==5.0.3
+          -v $WORKSPACE:/workspace \
+          -w /workspace \
+          python:3.10 bash -c "
+            pip install jenkins-job-builder==5.0.3 &&
             jenkins-jobs --conf config.ini update .
-        '
-    """
+          "
+    '''
     }
 }
