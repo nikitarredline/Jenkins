@@ -38,8 +38,12 @@ EOF
         }
     }
 
-    stage('Debug') {
-        sh 'ls -R'
+    stage('Debug host') {
+        sh '''
+    pwd
+    ls -la
+    ls -R
+    '''
     }
 
     stage('Run JJB') {
