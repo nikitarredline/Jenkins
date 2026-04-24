@@ -34,15 +34,14 @@ EOF
         }
     }
 
-    stage('Run JJB in Docker') {
+    stage('Run JJB') {
         sh '''
-            docker run --rm \
-            -v $WORKSPACE:/workspace \
-            -w /workspace \
-            python:3.11 bash -c "
-            pip install jenkins-job-builder &&
-            jenkins-jobs --conf config.ini update jobs/
-            "
-        '''
+        apt-get update || true
+        apt-get install -y python3 python3-pip || true
+
+        pip3 install jenkins-job-builder
+
+        jenkins-jobs --conf config.ini update jobs/
+    '''
     }
 }
