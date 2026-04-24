@@ -109,6 +109,27 @@ EOF
             }
         }
 
+        stage('DOCKER DIAG') {
+            steps {
+                sh '''
+            set -e
+            echo "DOCKER INFO"
+            docker info || true
+
+            echo "WHO AM I"
+            whoami
+
+            echo "WORKSPACE REAL"
+            ls -la $WORKSPACE
+
+            echo "TRY RAW MOUNT TEST"
+            docker run --rm \
+              -v "$WORKSPACE:/test" \
+              alpine ls -la /test || true
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
