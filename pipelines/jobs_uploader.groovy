@@ -60,34 +60,21 @@ EOF
         stage('Run JJB') {
             steps {
                 sh '''
-            set -e
+rm -rf /tmp/jjb_workspace
+mkdir -p /tmp/jjb_workspace
 
-            docker run --rm \
-              -v /tmp/jjb_workspace:/workspace \
-              -w /workspace \
-              python:3.10 bash -c '
+cp -r $WORKSPACE/* /tmp/jjb_workspace/
 
-                set -e
-
-                echo "=== INSIDE ==="
-                pwd
-                ls -la
-
-                echo "CONFIG:"
-                ls -la config.ini
-                cat config.ini
-
-                echo "JOBS:"
-                ls -la jobs
-
-                python --version
-
-                pip install --no-cache-dir jenkins-job-builder==5.0.3
-
-                jenkins-jobs --version
-                jenkins-jobs --conf config.ini update jobs/
-              '
-        '''
+docker run --rm \
+  -v /tmp/jjb_workspace:/workspace \
+  -w /workspace \
+  python:3.10 bash -c '
+    set -e
+    ls -la
+    ls -la config.ini
+    jenkins-jobs --conf config.ini update jobs/
+  '
+'''
             }
         }
     }
