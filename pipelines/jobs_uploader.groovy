@@ -150,17 +150,18 @@ EOF
                 sh '''
             set -e
 
-            echo "WORKSPACE=$WORKSPACE"
+            echo "HOST WORKSPACE=$WORKSPACE"
             ls -la "$WORKSPACE/jobs"
 
             docker run --rm \
-              -v "$WORKSPACE:$WORKSPACE" \
-              -w "$WORKSPACE" \
+              -v "$WORKSPACE:/workspace:rw" \
+              -w /workspace \
               jenkins-agent-python:1.0 bash -c "
                 set -e
+
                 echo INSIDE CONTAINER
                 pwd
-                ls -la jobs || true
+                ls -la jobs
 
                 python --version
                 jenkins-jobs --version
