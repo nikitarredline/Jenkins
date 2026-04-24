@@ -53,45 +53,34 @@ EOF
             }
         }
 
-        stage('Run Jenkins Job Builder') {
+        stage('Run JJB') {
             steps {
                 sh '''
-                    set -e
+            set -e
 
-                    echo "=== RESOLVED HOST PATH ==="
+            REAL_WS=/var/jenkins_home/workspace/jobs_uploader
 
-                    REAL_WS=/root/jenkins_home/workspace/jobs_uploader
+            echo "REAL_WS=$REAL_WS"
+            ls -la $REAL_WS
 
-                    echo "REAL_WS=$REAL_WS"
-                    ls -la $REAL_WS
+            docker run --rm \
+              -v $REAL_WS:/workspace \
+              -w /workspace \
+              python:3.10 bash -c '
+                set -e
 
-                    echo "=== DOCKER RUN ==="
+                echo "INSIDE"
+                ls -la
 
-                    docker run --rm \
-                      -v $REAL_WS:/workspace \
-                      -w /workspace \
-                      python:3.10 bash -c '
-                        set -e
+                echo "CONFIG"
+                ls -la config.ini
+                cat config.ini
 
-                        echo "INSIDE CONTAINER"
-                        pwd
-                        ls -la
+                pip install --no-cache-dir jenkins-job-builder==5.0.3
 
-                        echo "CONFIG CHECK"
-                        ls -la config.ini
-                        cat config.ini
-
-                        echo "JOBS"
-                        ls -la jobs
-
-                        python --version
-
-                        pip install --no-cache-dir jenkins-job-builder==5.0.3
-
-                        jenkins-jobs --version
-                        jenkins-jobs --conf config.ini update jobs/
-                      '
-                '''
+                jenkins-jobs --conf config.ini update jobs/
+              '
+        '''
             }
         }
     }
