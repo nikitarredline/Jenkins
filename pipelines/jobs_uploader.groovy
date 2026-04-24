@@ -55,7 +55,7 @@ EOF
                     set -e
 
                     docker run --rm \
-                        -v $WORKSPACE:/workspace \
+                        -v /var/jenkins_home:/var/jenkins_home \
                         -w /workspace \
                         jenkins-agent-python:1.0 \
                         bash -c "
