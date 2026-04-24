@@ -11,9 +11,6 @@ def JOBS_DIR = "./jobs"
 
 node() {
 
-    sh 'docker --version'
-    sh 'docker ps'
-
     currentBuild.description = "<p style='color: red;'>Jobs uploader</p>"
 
     stage('Checkout') {
@@ -25,7 +22,7 @@ node() {
             sh '''
             cat > config.ini << EOF
 [jenkins]
-url=''' + JENKINS_HOSTNAME + '''/jenkins/
+url=http://144.124.231.59/jenkins/
 user=$user
 password=$pass
 
@@ -41,7 +38,7 @@ EOF
         docker.image('python:3.11').inside {
             sh '''
                 pip install jenkins-job-builder
-                jenkins-jobs --conf config.ini --flush-cache update jobs/
+                jenkins-jobs --conf config.ini update jobs/
             '''
         }
     }
