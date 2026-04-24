@@ -49,16 +49,16 @@ EOF
     stage('Run JJB') {
         sh """
     docker run --rm \
-      -v ${pwd()}:/workspace \
+      -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
+      -w /workspace \
       python:3.10 bash -c "
         set -e
         echo '=== INSIDE CONTAINER ==='
         pwd
         ls -la
-        echo '=== CHECK JOBS DIR ==='
-        ls -la jobs || echo 'NO JOBS DIR'
-        echo '=== CHECK CONFIG ==='
-        ls -la config.ini || echo 'NO CONFIG'
+        ls -la jobs
+        pip install jenkins-job-builder==5.0.3
+        jenkins-jobs --conf config.ini update jobs/
       "
     """
     }
