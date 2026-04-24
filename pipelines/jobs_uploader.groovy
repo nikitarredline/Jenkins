@@ -4,7 +4,7 @@ import groovy.transform.Field
 def CONF_FILE = "./config.ini"
 
 @Field
-def JENKINS_HOSTNAME = 'http://144.124.231.59'
+def JENKINS_HOSTNAME = 'http://89.124.113.71'
 
 @Field
 def JOBS_DIR = "./jobs"
