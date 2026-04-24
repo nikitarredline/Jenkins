@@ -151,7 +151,7 @@ EOF
             set -e
 
             echo "WORKSPACE=$WORKSPACE"
-            ls -la $WORKSPACE/jobs
+            ls -la "$WORKSPACE/jobs"
 
             docker run --rm \
               -v "$WORKSPACE:/workspace" \
@@ -160,12 +160,12 @@ EOF
                 set -e
                 echo INSIDE CONTAINER
                 pwd
-                ls -la jobs
+                ls -la /workspace/jobs
 
                 python --version
                 jenkins-jobs --version
 
-                jenkins-jobs --conf config.ini update jobs/
+                jenkins-jobs --conf config.ini update /workspace/jobs/
               "
         '''
             }
