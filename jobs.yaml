@@ -1,19 +1,12 @@
-- scm:
-    name: uploader_scm
-    scm:
-      - git:
-          url: https://github.com/nikitarredline/Jenkins
-          branches:
-            - main
-
 - job-template:
     name: jobs_uploader
     project-type: pipeline
-    scm:
-      - uploader_scm
     pipeline-scm:
       scm:
-        - uploader_scm
+        - git:
+            url: https://github.com/nikitarredline/Jenkins
+            branches:
+              - main
       script-path: pipelines/jobs_uploader.groovy
 
 - project:
