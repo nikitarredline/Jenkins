@@ -44,14 +44,16 @@ EOF
             steps {
                 sh '''
                     set -e
-                    
-                    docker run --rm -v $WORKSPACE:/workspace -w /workspace jenkins-agent-python:1.0 ls -R
 
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
                         bash -c "
                             set -e
                             python --version
-                            jenkins-jobs --version
-                            jenkins-jobs --conf config.ini update jobs/
+                            /opt/venv/bin/jenkins-jobs --version
+                            /opt/venv/bin/jenkins-jobs --conf config.ini update jobs/
                         "
                 '''
             }
@@ -60,7 +62,9 @@ EOF
 
     post {
         always {
-            sh 'echo PIPELINE FINISHED'
+            sh '''
+                echo "PIPELINE FINISHED"
+            '''
         }
     }
 }
