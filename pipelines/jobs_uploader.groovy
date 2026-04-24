@@ -51,9 +51,20 @@ EOF
                 jenkins-agent-python:1.0 \
                 bash -c "
                     set -e
+
+                    echo '=== PYTHON ==='
                     python --version
+
+                    echo '=== JJB ==='
                     which jenkins-jobs
                     jenkins-jobs --version
+
+                    echo '=== YAML FILES ==='
+                    find jobs -type f -name '*.yaml' \
+                        -exec echo '==== {} ====' \\; \
+                        -exec cat {} \\;
+
+                    echo '=== RUN JJB ==='
                     jenkins-jobs --conf config.ini update jobs/
                 "
         '''
