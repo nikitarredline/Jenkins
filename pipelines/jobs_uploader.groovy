@@ -87,6 +87,27 @@ EOF
             }
         }
 
+        stage('MOUNT DEBUG') {
+            steps {
+                sh '''
+            set -e
+
+            echo "HOST WORKSPACE:"
+            ls -la /var/jenkins_home/workspace/jobs_uploader
+
+            echo "DOCKER ROOT MOUNT TEST:"
+            docker run --rm \
+              -v /var/jenkins_home/workspace/jobs_uploader:/mnt \
+              alpine ls -la /mnt
+
+            echo "CHECK JOBS INSIDE MOUNT:"
+            docker run --rm \
+              -v /var/jenkins_home/workspace/jobs_uploader:/mnt \
+              alpine ls -la /mnt/jobs || true
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
