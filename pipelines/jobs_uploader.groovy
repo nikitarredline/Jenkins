@@ -9,8 +9,9 @@ pipeline {
                     set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
-                    python3 --version || true
-                    docker --version || true
+
+                    python3 --version || echo "python3 not installed"
+                    which python3 || true
                 '''
             }
         }
@@ -38,29 +39,27 @@ keep_descriptions=False
 EOF
 
                         echo "CONFIG CREATED"
-                        ls -la config.ini
                     '''
                 }
             }
         }
 
-        stage('Run JJB (inside container)') {
+        stage('Setup venv + Run JJB') {
             steps {
                 sh '''
                     set -e
 
-                    echo "=== RUNNING IN DOCKER AGENT CONTAINER ==="
+                    echo "=== INSTALL DEPENDENCIES LOCALLY ==="
 
-                    docker run --rm \
-                        -v $WORKSPACE:/workspace \
-                        -w /workspace \
-                        jenkins-agent-python:1.0 \
-                        bash -c "
-                            set -e
-                            python --version
-                            jenkins-jobs --version
-                            jenkins-jobs --conf config.ini update jobs/
-                        "
+                    python3 -m venv venv
+                    . venv/bin/activate
+
+                    pip install --upgrade pip
+                    pip install jenkins-job-builder==5.0.3
+
+                    echo "=== RUN JJB ==="
+                    jenkins-jobs --version
+                    jenkins-jobs --conf config.ini update jobs/
                 '''
             }
         }
