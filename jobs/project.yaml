@@ -1,5 +1,5 @@
 - project:
     name: test_project
     jobs:
-      - DevOps/jobs_uploader
-      - QA/api_tests
+      - jobs_uploader
+      - api_tests

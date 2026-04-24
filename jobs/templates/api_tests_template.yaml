@@ -1,5 +1,5 @@
 - job-template:
-    name: QA/api_tests
+    name: api_tests
     project-type: freestyle
 
     scm:

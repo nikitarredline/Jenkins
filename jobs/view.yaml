@@ -1,5 +1,11 @@
 - view:
-    name: QA_view
+    name: DevOps
     view-type: list
     job-name:
-      - QA/api_tests
+      - jobs_uploader
+
+- view:
+    name: QA
+    view-type: list
+    job-name:
+      - api_tests

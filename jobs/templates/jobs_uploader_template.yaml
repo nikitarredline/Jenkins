@@ -1,5 +1,5 @@
 - job-template:
-    name: DevOps/jobs_uploader
+    name: jobs_uploader
     project-type: pipeline
     pipeline-scm:
       scm:
