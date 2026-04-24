@@ -48,31 +48,30 @@ EOF
                 sh '''
             set -e
 
-            echo "=== JENKINS WORKSPACE ==="
+            echo "=== WORKSPACE CHECK ==="
             echo $WORKSPACE
             ls -la $WORKSPACE
 
-            echo "=== DOCKER RUN ==="
+            echo "=== CHECK CONFIG ==="
+            cat $WORKSPACE/config.ini
 
-            docker run --rm \
-              -v $WORKSPACE:$WORKSPACE \
-              -w $WORKSPACE \
-              python:3.10 bash -c '
-                set -e
+            echo "=== CREATE VENV (Python safe layer) ==="
+            python3 -m venv venv
+            . venv/bin/activate
 
-                echo "INSIDE CONTAINER"
-                ls -la
+            echo "=== PYTHON VERSION ==="
+            python --version
+            pip --version
 
-                echo "CONFIG CHECK"
-                cat config.ini
+            echo "=== INSTALL JJB ==="
+            pip install --no-cache-dir --upgrade pip
+            pip install jenkins-job-builder==5.0.3
 
-                echo "JOBS"
-                ls -la jobs
+            echo "=== VERIFY JJB ==="
+            jenkins-jobs --version
 
-                pip install --no-cache-dir jenkins-job-builder==5.0.3
-
-                jenkins-jobs --conf config.ini update jobs/
-              '
+            echo "=== RUN JJB UPDATE ==="
+            jenkins-jobs --conf $WORKSPACE/config.ini update $WORKSPACE/jobs/
         '''
             }
         }
