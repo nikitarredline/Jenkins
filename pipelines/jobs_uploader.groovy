@@ -44,11 +44,9 @@ EOF
             steps {
                 sh '''
                     set -e
+                    
+                    docker run --rm -v $WORKSPACE:/workspace -w /workspace jenkins-agent-python:1.0 ls -R
 
-                    docker run --rm \
-                        -v $WORKSPACE:/workspace \
-                        -w /workspace \
-                        jenkins-agent-python:1.0 \
                         bash -c "
                             set -e
                             python --version
