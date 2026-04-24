@@ -24,7 +24,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        cat > config.ini <<EOF
+                        cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -36,22 +36,10 @@ keep_descriptions=False
 EOF
 
                         echo "CONFIG CREATED"
-                        ls -la config.ini
-                        cat config.ini
+                        ls -la $WORKSPACE/config.ini
+                        cat $WORKSPACE/config.ini
                     '''
                 }
-            }
-        }
-
-        stage('Host debug') {
-            steps {
-                sh '''
-                    set -e
-                    echo "HOST DEBUG"
-                    echo "WORKSPACE=$WORKSPACE"
-                    ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs
-                '''
             }
         }
 
@@ -60,10 +48,11 @@ EOF
                 sh '''
                     set -e
 
-                    echo "=== RUNNING IN DOCKER (USING JENKINS WORKSPACE DIRECTLY) ==="
+                    echo "=== WORKSPACE CHECK ==="
+                    ls -la $WORKSPACE
 
                     docker run --rm \
-                      -v "$WORKSPACE:/workspace" \
+                      -v $WORKSPACE:/workspace \
                       -w /workspace \
                       python:3.10 bash -c '
                         set -e
@@ -73,6 +62,7 @@ EOF
                         ls -la
 
                         echo "CONFIG CHECK"
+                        ls -la config.ini
                         cat config.ini
 
                         echo "JOBS"
