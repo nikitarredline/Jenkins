@@ -48,30 +48,24 @@ EOF
                 sh '''
             set -e
 
-            echo "=== WORKSPACE CHECK ==="
-            echo $WORKSPACE
-            ls -la $WORKSPACE
+            echo "=== CHECK SYSTEM PYTHON ==="
+            python3 --version
 
-            echo "=== CHECK CONFIG ==="
-            cat $WORKSPACE/config.ini
-
-            echo "=== CREATE VENV (Python safe layer) ==="
+            echo "=== INSTALL PYTHON 3.11 VENV (safe) ==="
             python3 -m venv venv
             . venv/bin/activate
 
-            echo "=== PYTHON VERSION ==="
-            python --version
-            pip --version
+            echo "=== FORCE PIP UPDATE ==="
+            pip install --upgrade pip setuptools wheel
 
-            echo "=== INSTALL JJB ==="
-            pip install --no-cache-dir --upgrade pip
-            pip install jenkins-job-builder==5.0.3
+            echo "=== INSTALL COMPATIBLE JJB ==="
+            pip install "jenkins-job-builder==5.0.3"
 
             echo "=== VERIFY JJB ==="
             jenkins-jobs --version
 
-            echo "=== RUN JJB UPDATE ==="
-            jenkins-jobs --conf $WORKSPACE/config.ini update $WORKSPACE/jobs/
+            echo "=== RUN UPDATE ==="
+            jenkins-jobs --conf config.ini update jobs/
         '''
             }
         }
