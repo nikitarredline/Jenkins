@@ -86,6 +86,12 @@ EOF
         }
     }
 
+    echo "HOST WORKSPACE:"
+    ls -la $WORKSPACE
+
+    echo "REAL PATH CHECK:"
+    realpath $WORKSPACE
+
     post {
         always {
             sh '''
