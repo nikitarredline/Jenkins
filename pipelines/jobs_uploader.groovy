@@ -50,12 +50,15 @@ EOF
         sh """
     docker run --rm \
       -v ${pwd()}:/workspace \
-      -w /workspace \
       python:3.10 bash -c "
         set -e
+        echo '=== INSIDE CONTAINER ==='
+        pwd
         ls -la
-        pip install jenkins-job-builder==5.0.3
-        jenkins-jobs --conf config.ini update jobs/
+        echo '=== CHECK JOBS DIR ==='
+        ls -la jobs || echo 'NO JOBS DIR'
+        echo '=== CHECK CONFIG ==='
+        ls -la config.ini || echo 'NO CONFIG'
       "
     """
     }
