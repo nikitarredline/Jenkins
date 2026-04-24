@@ -1,82 +1,75 @@
 import groovy.transform.Field
 
 @Field
-def CONF_FILE = "./config.ini"
-
-@Field
-def JENKINS_HOSTNAME = 'http://89.124.113.71'
-
-@Field
-def JOBS_DIR = "./jobs"
+def JENKINS_URL = 'http://89.124.113.71/jenkins/'
 
 node() {
 
-    currentBuild.description = "<p style='color: red;'>Jobs uploader</p>"
+    currentBuild.description = "<p style='color: red;'>Jobs uploader (JJB)</p>"
 
     stage('Checkout') {
-        checkout([
-                $class: 'GitSCM',
-                branches: [[name: '*/main']],
-                userRemoteConfigs: [[url: 'https://github.com/nikitarredline/Jenkins']]
-        ])
+        checkout scm
     }
 
     stage('Create config.ini') {
-        withCredentials([usernamePassword(credentialsId: "jenkins", usernameVariable: "user", passwordVariable: 'pass')]) {
-            sh '''
-            cat > config.ini << EOF
+        withCredentials([usernamePassword(
+                credentialsId: "jenkins",
+                usernameVariable: "USER",
+                passwordVariable: "PASS"
+        )]) {
+
+            sh """
+cat > config.ini <<EOF
 [jenkins]
-url=http://89.124.113.71/jenkins/
-user=$user
-password=$pass
+url=${JENKINS_URL}
+user=${USER}
+password=${PASS}
 
 [job_builder]
 recursive=True
 keep_descriptions=False
 EOF
-            '''
+"""
         }
     }
 
-    stage('Debug host') {
+    stage('Debug workspace (host)') {
         sh '''
-    pwd
-    ls -la
-    ls -R
-    '''
+            echo "=== HOST WORKSPACE ==="
+            pwd
+            ls -R
+            echo "=== JOBS DIR ==="
+            ls -la jobs
+        '''
     }
 
-    stage('Check host Python') {
-        sh '''
-        echo "=== HOST PYTHON ==="
-        python3 --version || python --version
-        which python3 || which python
-    '''
-    }
-
-    stage('Debug workspace') {
-        sh '''
-        echo "WORKSPACE=$WORKSPACE"
-        ls -la $WORKSPACE
-        ls -la $WORKSPACE/jobs || true
-    '''
-    }
-
-    stage('Run JJB') {
+    stage('Run Jenkins Job Builder') {
         sh """
-    docker run --rm \
-      -v ${env.WORKSPACE}:/workspace \
-      -w /workspace \
-      python:3.10 \
-      bash -c '
-        set -e
-        pwd
-        ls -R
-        pip install --upgrade pip
-        pip install jenkins-job-builder==5.0.3
-        jenkins-jobs --version
-        jenkins-jobs --conf config.ini update jobs/
-      '
-    """
+docker run --rm \
+  -v ${env.WORKSPACE}:/workspace \
+  -w /workspace \
+  python:3.10 bash -c '
+    set -e
+
+    echo "=== INSIDE CONTAINER ==="
+    pwd
+    ls -R
+
+    echo "=== PYTHON VERSION ==="
+    python --version
+
+    echo "=== INSTALL JJB ==="
+    pip install --no-cache-dir jenkins-job-builder==5.0.3
+
+    echo "=== JJB VERSION ==="
+    jenkins-jobs --version
+
+    echo "=== VALIDATE CONFIG ==="
+    cat config.ini
+
+    echo "=== RUN UPDATE ==="
+    jenkins-jobs --conf config.ini update jobs/
+  '
+"""
     }
 }

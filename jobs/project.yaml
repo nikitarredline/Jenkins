@@ -1,5 +1,4 @@
 - project:
-    name: ci_project
-
+    name: test_project
     jobs:
       - jobs_uploader
