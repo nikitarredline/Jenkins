@@ -52,24 +52,27 @@ EOF
         stage('RUN JJB') {
             steps {
                 sh '''
-set -e
+            set -e
 
-docker run --rm \
-  -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
-  -w /workspace \
-  jenkins-agent-python:1.0 \
-  bash -c "
-    echo INSIDE CONTAINER
-    pwd
-    ls -la
-    ls -la jobs
+            echo "WORKSPACE=$WORKSPACE"
+            ls -la $WORKSPACE
 
-    python --version
-    jenkins-jobs --version
+            docker run --rm \
+              -v $WORKSPACE:/workspace \
+              -w /workspace \
+              jenkins-agent-python:1.0 \
+              bash -c "
+                set -e
+                echo INSIDE
+                ls -la
+                ls -la jobs
 
-    jenkins-jobs --conf config.ini update jobs/
-  "
-'''
+                python --version
+                jenkins-jobs --version
+
+                jenkins-jobs --conf config.ini update jobs/
+              "
+        '''
             }
         }
     }
