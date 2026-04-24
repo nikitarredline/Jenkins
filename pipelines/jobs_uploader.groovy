@@ -45,6 +45,9 @@ EOF
                 sh '''
             set -e
 
+            echo "WORKSPACE is: $WORKSPACE"
+            ls -la $WORKSPACE
+
             docker run --rm \
                 -v $WORKSPACE:/workspace \
                 -w /workspace \
@@ -52,17 +55,21 @@ EOF
                 bash -c "
                     set -e
 
+                    echo '=== INSIDE CONTAINER ==='
+                    pwd
+                    ls -la
+
                     echo '=== PYTHON ==='
                     python --version
 
                     echo '=== JJB ==='
-                    which jenkins-jobs
                     jenkins-jobs --version
 
-                    echo '=== YAML FILES ==='
-                    find jobs -type f -name '*.yaml' \
-                        -exec echo '==== {} ====' \\; \
-                        -exec cat {} \\;
+                    echo '=== JOBS DIR CHECK ==='
+                    ls -la jobs || echo 'NO JOBS DIR'
+
+                    echo '=== YAML SEARCH ==='
+                    find . -name '*.yaml' -maxdepth 3 -print
 
                     echo '=== RUN JJB ==='
                     jenkins-jobs --conf config.ini update jobs/
