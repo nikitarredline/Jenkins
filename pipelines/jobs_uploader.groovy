@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'jenkins-agent-python:1.0'
-        }
-    }
+    agent any
 
     stages {
 
@@ -13,8 +9,8 @@ pipeline {
                     set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
-                    python --version
-                    jenkins-jobs --version
+                    python3 --version || true
+                    docker --version || true
                 '''
             }
         }
@@ -48,15 +44,23 @@ EOF
             }
         }
 
-        stage('Run JJB') {
+        stage('Run JJB (inside container)') {
             steps {
                 sh '''
                     set -e
 
-                    python --version
-                    jenkins-jobs --version
+                    echo "=== RUNNING IN DOCKER AGENT CONTAINER ==="
 
-                    jenkins-jobs --conf config.ini update jobs/
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            set -e
+                            python --version
+                            jenkins-jobs --version
+                            jenkins-jobs --conf config.ini update jobs/
+                        "
                 '''
             }
         }
