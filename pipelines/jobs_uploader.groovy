@@ -15,14 +15,18 @@ pipeline {
 
         stage('Create config.ini') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
+                withCredentials([usernamePassword(
+                        credentialsId: 'jenkins',
+                        usernameVariable: 'JENKINS_USER',
+                        passwordVariable: 'JENKINS_PASS'
+                )]) {
                     sh '''
                         set -e
 
                         cat > config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
-user=admin
+user=${JENKINS_USER}
 password=${JENKINS_PASS}
 
 [job_builder]
@@ -32,7 +36,6 @@ EOF
 
                         echo "CONFIG CREATED"
                         ls -la config.ini
-                        cat config.ini
                     '''
                 }
             }
@@ -43,6 +46,7 @@ EOF
                 sh '''
                     echo "HOST DEBUG"
                     echo "WORKSPACE=$WORKSPACE"
+
                     ls -la $WORKSPACE
                     ls -la jobs
                 '''
@@ -50,45 +54,31 @@ EOF
         }
 
         stage('Run Jenkins Job Builder') {
-
-            sh '''
-    set -e
-
-    echo "WORKSPACE=$WORKSPACE"
-
-    if [ -z "$WORKSPACE" ]; then
-        echo "WORKSPACE is EMPTY"
-        exit 1
-    fi
-
-    ls -la "$WORKSPACE"
-    realpath "$WORKSPACE"
-'''
-        }
-
-        stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
                     set -e
+
+                    echo "=== WORKSPACE CHECK ==="
+                    ls -la $WORKSPACE
+                    realpath $WORKSPACE
 
                     echo "=== DOCKER RUN ==="
 
                     docker run --rm \
                       -v $WORKSPACE:/workspace \
                       -w /workspace \
-                      python:3.10 \
-                      bash -c "
+                      python:3.10 bash -c '
                         set -e
 
-                        echo 'INSIDE CONTAINER'
+                        echo "INSIDE CONTAINER"
                         pwd
                         ls -la
 
-                        echo 'CONFIG CHECK'
+                        echo "CONFIG CHECK"
                         ls -la config.ini
                         cat config.ini
 
-                        echo 'JOBS'
+                        echo "JOBS"
                         ls -la jobs
 
                         python --version
@@ -97,7 +87,7 @@ EOF
 
                         jenkins-jobs --version
                         jenkins-jobs --conf config.ini update jobs/
-                      "
+                      '
                 '''
             }
         }
