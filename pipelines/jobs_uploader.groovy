@@ -45,34 +45,30 @@ EOF
         stage('Run JJB in Docker') {
             steps {
                 sh '''
+            set -e
+
+            echo "=== WORKSPACE CONTENT ==="
+            ls -R $WORKSPACE
+
+            docker run --rm \
+                -v $WORKSPACE:/workspace \
+                -w /workspace \
+                jenkins-agent-python:1.0 \
+                bash -c "
                     set -e
+                    echo '=== INSIDE CONTAINER ==='
+                    ls -R /workspace
 
-                    echo "=== CHECK WORKSPACE CONTENT ==="
-                    ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs || echo "NO JOBS DIR"
+                    echo '=== PYTHON ==='
+                    python --version
 
-                    docker run --rm \
-                        -v $WORKSPACE:/workspace \
-                        -w /workspace \
-                        jenkins-agent-python:1.0 \
-                        bash -c "
-                            set -e
-                            echo '=== INSIDE CONTAINER ==='
-                            ls -la
+                    echo '=== JJB ==='
+                    jenkins-jobs --version
 
-                            echo '=== PYTHON ==='
-                            python --version
-
-                            echo '=== JJB ==='
-                            jenkins-jobs --version
-
-                            echo '=== SEARCH YAML ==='
-                            find . -name '*.yaml'
-
-                            echo '=== RUN JJB ==='
-                            jenkins-jobs --conf config.ini update jobs/
-                        "
-                '''
+                    echo '=== RUN JJB ==='
+                    jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
+                "
+        '''
             }
         }
     }
