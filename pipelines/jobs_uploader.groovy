@@ -47,28 +47,36 @@ ls -la $WORKSPACE/config.ini
 
     stage('Run JJB') {
         sh '''
+set -e
+
+echo "WORKSPACE=$WORKSPACE"
+
+# проверка на host
+ls -la "$WORKSPACE"
+
+docker run --rm \
+  -v "$WORKSPACE:/workspace" \
+  -w /workspace \
+  python:3.10 bash -c '
     set -e
 
-    echo "WORKSPACE=$WORKSPACE"
-    ls -la "$WORKSPACE"
+    echo "=== INSIDE CONTAINER ==="
+    pwd
+    ls -la
 
-    docker run --rm \
-      -v "$WORKSPACE:$WORKSPACE" \
-      -w "$WORKSPACE" \
-      python:3.10 bash -c '
-        set -e
+    echo "CONFIG:"
+    ls -la config.ini
 
-        echo "=== INSIDE ==="
-        pwd
-        ls -la config.ini
-        ls -la jobs
+    echo "JOBS:"
+    ls -la jobs
 
-        python --version
-        pip install --no-cache-dir jenkins-job-builder==5.0.3
+    python --version
 
-        jenkins-jobs --version
-        jenkins-jobs --conf config.ini update jobs/
-      '
-    '''
+    pip install --no-cache-dir jenkins-job-builder==5.0.3
+
+    jenkins-jobs --version
+    jenkins-jobs --conf config.ini update jobs/
+  '
+'''
     }
 }
