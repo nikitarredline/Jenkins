@@ -46,33 +46,37 @@ EOF
         stage('Run JJB') {
             steps {
                 sh '''
-                    set -e
+            set -e
 
-                    echo "=== USING WORKSPACE ==="
-                    ls -la $WORKSPACE
+            WS=/var/jenkins_home/workspace/jobs_uploader
 
-                    echo "=== DOCKER RUN ==="
+            echo "=== HOST WORKSPACE ==="
+            ls -la $WS
 
-                    docker run --rm \
-                      -v $WORKSPACE:$WORKSPACE \
-                      -w $WORKSPACE \
-                      python:3.10 bash -c '
-                        set -e
+            echo "=== DOCKER RUN ==="
 
-                        echo "INSIDE CONTAINER"
-                        ls -la
+            docker run --rm \
+              -v $WS:/workspace \
+              -w /workspace \
+              python:3.10 bash -c '
+                set -e
 
-                        echo "CONFIG CHECK"
-                        cat config.ini
+                echo "INSIDE CONTAINER"
+                pwd
+                ls -la
 
-                        echo "JOBS"
-                        ls -la jobs
+                echo "CONFIG CHECK"
+                ls -la config.ini
+                cat config.ini
 
-                        pip install --no-cache-dir jenkins-job-builder==5.0.3
+                echo "JOBS"
+                ls -la jobs
 
-                        jenkins-jobs --conf config.ini update jobs/
-                      '
-                '''
+                pip install --no-cache-dir jenkins-job-builder==5.0.3
+
+                jenkins-jobs --conf config.ini update jobs/
+              '
+        '''
             }
         }
     }
