@@ -1,4 +1,3 @@
----
 - scm:
     name: uploader_scm
     scm:
@@ -7,4 +6,3 @@
           credentials_id: ssh_key
           branches:
             - '*/main'
-          refspec: $REFSPEC

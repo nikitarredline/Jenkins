@@ -1,6 +1,10 @@
 - job-template:
     name: jobs_uploader
     project-type: pipeline
+
+    scm:
+      - uploader_scm
+
     pipeline-scm:
       scm:
         - uploader_scm

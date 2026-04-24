@@ -1,5 +1,6 @@
 - view:
     name: test_view
     view-type: list
+
     job-name:
       - jobs_uploader
