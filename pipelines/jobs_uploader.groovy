@@ -56,6 +56,7 @@ EOF
 
             echo "WORKSPACE=$WORKSPACE"
             ls -la $WORKSPACE
+            ls -la $WORKSPACE/jobs
 
             docker run --rm \
               -v $WORKSPACE:/workspace \
