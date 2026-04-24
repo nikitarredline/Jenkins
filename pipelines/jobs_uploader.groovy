@@ -55,36 +55,44 @@ EOF
             }
         }
 
-        stage('Run Jenkins Job Builder') {
+        stage('Run JJB') {
             steps {
                 sh '''
             set -e
 
-            echo "=== USING JENKINS WORKSPACE DIRECTLY ==="
-            echo $WORKSPACE
-            ls -la $WORKSPACE
+            echo "=== FIND HOST MOUNT ==="
 
-            echo "=== DOCKER RUN ==="
+            CONTAINER_ID=$(hostname)
+
+            HOST_BASE=$(docker inspect $CONTAINER_ID \
+              --format='{{ range .Mounts }}{{ if eq .Destination "/var/jenkins_home" }}{{ .Source }}{{ end }}{{ end }}')
+
+            echo "HOST_BASE=$HOST_BASE"
+
+            HOST_WS="$HOST_BASE/workspace/jobs_uploader"
+
+            echo "HOST_WS=$HOST_WS"
+
+            if [ ! -d "$HOST_WS" ]; then
+                echo "ERROR: not found on host"
+                ls -la "$HOST_BASE/workspace"
+                exit 1
+            fi
+
+            echo "=== RUN DOCKER ==="
 
             docker run --rm \
-              -v "$WORKSPACE:/workspace" \
+              -v "$HOST_WS:/workspace" \
               -w /workspace \
               python:3.10 bash -c '
                 set -e
-
-                echo "INSIDE CONTAINER"
-                pwd
+                echo "INSIDE"
                 ls -la
 
-                echo "CONFIG CHECK"
-                ls -la config.ini
+                echo "CONFIG"
                 cat config.ini
 
-                echo "JOBS"
-                ls -la jobs
-
                 pip install --no-cache-dir jenkins-job-builder==5.0.3
-
                 jenkins-jobs --conf config.ini update jobs/
               '
         '''
