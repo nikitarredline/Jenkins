@@ -59,18 +59,18 @@ EOF
             ls -la $WORKSPACE
 
             docker run --rm \
-                -v "$WORKSPACE:$WORKSPACE" \
-                -w "$WORKSPACE" \
+                -v "$WORKSPACE:/workspace" \
+                -w /workspace \
                 jenkins-agent-python:1.0 \
                 bash -c "
                     set -e
 
                     echo '=== INSIDE CONTAINER ==='
-                    ls -R
+                    ls -R /workspace
 
-                    echo '=== JJB ==='
+                    echo '=== JJB RUN ==='
                     jenkins-jobs --version
-                    jenkins-jobs --conf config.ini update jobs/
+                    jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
                 "
         '''
             }
