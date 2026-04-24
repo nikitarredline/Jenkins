@@ -58,14 +58,17 @@ EOF
                 sh '''
                     set -e
 
-                    echo "=== WORKSPACE CHECK ==="
-                    ls -la $WORKSPACE
-                    realpath $WORKSPACE
+                    echo "=== RESOLVED HOST PATH ==="
+
+                    REAL_WS=/root/jenkins_home/workspace/jobs_uploader
+
+                    echo "REAL_WS=$REAL_WS"
+                    ls -la $REAL_WS
 
                     echo "=== DOCKER RUN ==="
 
                     docker run --rm \
-                      -v $WORKSPACE:/workspace \
+                      -v $REAL_WS:/workspace \
                       -w /workspace \
                       python:3.10 bash -c '
                         set -e
