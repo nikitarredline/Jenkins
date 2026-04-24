@@ -7,9 +7,9 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    echo "HOST=$(hostname)"
+                    hostname
                     echo "WORKSPACE=$WORKSPACE"
-                    ls -la
+                    ls -la $WORKSPACE
                 '''
             }
         }
@@ -23,8 +23,6 @@ pipeline {
                 )]) {
                     sh '''
                         set -e
-
-                        echo "=== CREATE config.ini ==="
 
                         cat > config.ini <<EOF
 [jenkins]
@@ -49,12 +47,10 @@ EOF
             steps {
                 sh '''
                     set -e
-
-                    echo "=== HOST DEBUG ==="
+                    echo "HOST DEBUG"
                     echo "WORKSPACE=$WORKSPACE"
-
-                    ls -la "$WORKSPACE"
-                    ls -la jobs
+                    ls -la $WORKSPACE
+                    ls -la $WORKSPACE/jobs
                 '''
             }
         }
@@ -64,36 +60,23 @@ EOF
                 sh '''
                     set -e
 
-                    echo "=== RESOLVED PATH (HOST) ==="
-
-                    REAL_WS=/root/jenkins_home/workspace/jobs_uploader
-
-                    echo "REAL_WS=$REAL_WS"
-
-                    if [ ! -d "$REAL_WS" ]; then
-                        echo "ERROR: REAL_WS not found on host"
-                        exit 1
-                    fi
-
-                    ls -la "$REAL_WS"
-
                     echo "=== DOCKER RUN ==="
 
                     docker run --rm \
-                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -v $WORKSPACE:/workspace \
                       -w /workspace \
                       python:3.10 bash -c '
                         set -e
 
-                        echo "=== INSIDE CONTAINER ==="
+                        echo "INSIDE CONTAINER"
                         pwd
                         ls -la
 
-                        echo "=== CONFIG CHECK ==="
+                        echo "CONFIG CHECK"
                         ls -la config.ini
                         cat config.ini
 
-                        echo "=== JOBS ==="
+                        echo "JOBS"
                         ls -la jobs
 
                         python --version
@@ -101,8 +84,6 @@ EOF
                         pip install --no-cache-dir jenkins-job-builder==5.0.3
 
                         jenkins-jobs --version
-
-                        echo "=== RUN JJB ==="
                         jenkins-jobs --conf config.ini update jobs/
                       '
                 '''
@@ -113,8 +94,8 @@ EOF
     post {
         always {
             sh '''
-                echo "=== PIPELINE FINISHED ==="
-                ls -la
+                echo "PIPELINE FINISHED"
+                ls -la $WORKSPACE
             '''
         }
     }
