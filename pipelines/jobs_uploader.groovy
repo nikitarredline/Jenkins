@@ -54,6 +54,14 @@ EOF
     '''
     }
 
+    stage('Debug workspace') {
+        sh '''
+        echo "WORKSPACE=$WORKSPACE"
+        ls -la $WORKSPACE
+        ls -la $WORKSPACE/jobs || true
+    '''
+    }
+
     stage('Run JJB') {
         sh """
     docker run --rm \
