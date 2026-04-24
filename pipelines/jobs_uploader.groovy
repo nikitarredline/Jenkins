@@ -17,7 +17,7 @@ node() {
         checkout scm
     }
 
-    stage('Create conf.ini') {
+    stage('Create config.ini') {
         withCredentials([usernamePassword(credentialsId: "jenkins", usernameVariable: "user", passwordVariable: 'pass')]) {
             sh '''
             cat > config.ini << EOF

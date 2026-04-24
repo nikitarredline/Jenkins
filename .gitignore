@@ -1,5 +1,5 @@
 target/
 .idea/
 *.iml
-conf.ini
+config.ini
 lib/
