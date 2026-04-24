@@ -7,7 +7,7 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    hostname
+                    echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
                     ls -la $WORKSPACE
                 '''
@@ -55,47 +55,34 @@ EOF
             }
         }
 
-        stage('Run JJB') {
+        stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
-            set -e
+                    set -e
 
-            echo "=== FIND HOST MOUNT ==="
+                    echo "=== RUNNING IN DOCKER (USING JENKINS WORKSPACE DIRECTLY) ==="
 
-            CONTAINER_ID=$(hostname)
+                    docker run --rm \
+                      -v "$WORKSPACE:/workspace" \
+                      -w /workspace \
+                      python:3.10 bash -c '
+                        set -e
 
-            HOST_BASE=$(docker inspect $CONTAINER_ID \
-              --format='{{ range .Mounts }}{{ if eq .Destination "/var/jenkins_home" }}{{ .Source }}{{ end }}{{ end }}')
+                        echo "INSIDE CONTAINER"
+                        pwd
+                        ls -la
 
-            echo "HOST_BASE=$HOST_BASE"
+                        echo "CONFIG CHECK"
+                        cat config.ini
 
-            HOST_WS="$HOST_BASE/workspace/jobs_uploader"
+                        echo "JOBS"
+                        ls -la jobs
 
-            echo "HOST_WS=$HOST_WS"
+                        pip install --no-cache-dir jenkins-job-builder==5.0.3
 
-            if [ ! -d "$HOST_WS" ]; then
-                echo "ERROR: not found on host"
-                ls -la "$HOST_BASE/workspace"
-                exit 1
-            fi
-
-            echo "=== RUN DOCKER ==="
-
-            docker run --rm \
-              -v "$HOST_WS:/workspace" \
-              -w /workspace \
-              python:3.10 bash -c '
-                set -e
-                echo "INSIDE"
-                ls -la
-
-                echo "CONFIG"
-                cat config.ini
-
-                pip install --no-cache-dir jenkins-job-builder==5.0.3
-                jenkins-jobs --conf config.ini update jobs/
-              '
-        '''
+                        jenkins-jobs --conf config.ini update jobs/
+                      '
+                '''
             }
         }
     }
