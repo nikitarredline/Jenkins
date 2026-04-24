@@ -3,15 +3,11 @@ pipeline {
 
     stages {
 
-        stage('DEBUG NODE') {
+        stage('DEBUG') {
             steps {
                 sh '''
-                    set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
-
-                    python3 --version || echo "python3 not installed"
-                    which python3 || true
                 '''
             }
         }
@@ -25,9 +21,7 @@ pipeline {
                 )]) {
 
                     sh '''
-                        set -e
-
-                        cat > config.ini <<EOF
+cat > config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -37,29 +31,23 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
-
-                        echo "CONFIG CREATED"
                     '''
                 }
             }
         }
 
-        stage('Setup venv + Run JJB') {
+        stage('Run JJB in Docker') {
             steps {
                 sh '''
-                    set -e
-
-                    echo "=== INSTALL DEPENDENCIES LOCALLY ==="
-
-                    python3 -m venv venv
-                    . venv/bin/activate
-
-                    pip install --upgrade pip
-                    pip install jenkins-job-builder==5.0.3
-
-                    echo "=== RUN JJB ==="
-                    jenkins-jobs --version
-                    jenkins-jobs --conf config.ini update jobs/
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            python --version
+                            jenkins-jobs --version
+                            jenkins-jobs --conf config.ini update jobs/
+                        "
                 '''
             }
         }
@@ -67,10 +55,7 @@ EOF
 
     post {
         always {
-            sh '''
-                echo "PIPELINE FINISHED"
-                ls -la
-            '''
+            sh 'echo PIPELINE FINISHED'
         }
     }
 }
