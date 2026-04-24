@@ -56,6 +56,22 @@ EOF
             }
         }
 
+        stage('DOCKER MOUNT TEST') {
+            steps {
+                sh '''
+            set -e
+
+            echo "WORKSPACE = $WORKSPACE"
+            ls -la $WORKSPACE
+
+            echo "=== TEST DOCKER MOUNT ==="
+            docker run --rm \
+              -v $WORKSPACE:/workspace \
+              alpine ls -la /workspace
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
