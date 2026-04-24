@@ -6,8 +6,10 @@ pipeline {
         stage('DEBUG') {
             steps {
                 sh '''
+                    set -e
                     echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
+                    which docker || echo "DOCKER NOT FOUND"
                 '''
             }
         }
@@ -21,7 +23,9 @@ pipeline {
                 )]) {
 
                     sh '''
-cat > config.ini <<EOF
+                        set -e
+
+                        cat > config.ini <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -39,11 +43,14 @@ EOF
         stage('Run JJB in Docker') {
             steps {
                 sh '''
+                    set -e
+
                     docker run --rm \
                         -v $WORKSPACE:/workspace \
                         -w /workspace \
                         jenkins-agent-python:1.0 \
                         bash -c "
+                            set -e
                             python --version
                             jenkins-jobs --version
                             jenkins-jobs --conf config.ini update jobs/
