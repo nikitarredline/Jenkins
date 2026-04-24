@@ -49,7 +49,7 @@ EOF
           -w /workspace \
           python:3.10 bash -c "
             pip install jenkins-job-builder==5.0.3 &&
-            jenkins-jobs --conf config.ini update .
+            jenkins-jobs --conf config.ini update jobs/
           "
     '''
     }
