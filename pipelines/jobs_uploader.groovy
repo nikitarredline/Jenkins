@@ -8,7 +8,7 @@ pipeline {
                 sh '''
                     set -e
                     echo "HOST=$(hostname)"
-                    echo "WORKSPACE=$WORKSPACE"
+                    echo "JENKINS_WORKSPACE=$WORKSPACE"
                     ls -la $WORKSPACE
                 '''
             }
@@ -21,6 +21,7 @@ pipeline {
                         usernameVariable: 'JENKINS_USER',
                         passwordVariable: 'JENKINS_PASS'
                 )]) {
+
                     sh '''
                         set -e
 
@@ -37,32 +38,31 @@ EOF
 
                         echo "CONFIG CREATED"
                         ls -la $WORKSPACE/config.ini
-                        cat $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('Run Jenkins Job Builder') {
+        stage('Run JJB') {
             steps {
                 sh '''
                     set -e
 
-                    echo "=== WORKSPACE CHECK ==="
+                    echo "=== USING WORKSPACE ==="
                     ls -la $WORKSPACE
 
+                    echo "=== DOCKER RUN ==="
+
                     docker run --rm \
-                      -v $WORKSPACE:/workspace \
-                      -w /workspace \
+                      -v $WORKSPACE:$WORKSPACE \
+                      -w $WORKSPACE \
                       python:3.10 bash -c '
                         set -e
 
                         echo "INSIDE CONTAINER"
-                        pwd
                         ls -la
 
                         echo "CONFIG CHECK"
-                        ls -la config.ini
                         cat config.ini
 
                         echo "JOBS"
