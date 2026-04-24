@@ -6,5 +6,5 @@
           url: https://github.com/nikitarredline/Jenkins
           credentials_id: ssh_key
           branches:
-            - FETCH_HEAD
+            - '*/main'
           refspec: $REFSPEC
