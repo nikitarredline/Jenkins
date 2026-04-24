@@ -49,14 +49,12 @@ EOF
     stage('Run JJB') {
         sh """
     docker run --rm \
-      -v ${env.WORKSPACE}:/workspace \
+      -v ${pwd()}:/workspace \
       -w /workspace \
       python:3.10 bash -c "
         set -e
-        python --version
-        pip install --upgrade pip setuptools wheel
+        ls -la
         pip install jenkins-job-builder==5.0.3
-        ls -R
         jenkins-jobs --conf config.ini update jobs/
       "
     """
