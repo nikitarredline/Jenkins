@@ -1,4 +1,17 @@
 pipeline {
+
+    stage('DEBUG NODE') {
+        steps {
+            sh '''
+            echo "NODE NAME: $(hostname)"
+            whoami
+            pwd
+            ls -la
+        '''
+        }
+    }
+
+
     agent any
 
     environment {
@@ -7,6 +20,11 @@ pipeline {
 
     stages {
 
+        sh '''
+    HOSTNAME=$(hostname)
+    echo "HOST=$HOSTNAME"
+'''
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -14,6 +32,12 @@ pipeline {
         }
 
         stage('Create config.ini') {
+
+            sh '''
+    HOSTNAME=$(hostname)
+    echo "HOST=$HOSTNAME"
+'''
+
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
                     sh '''
@@ -41,6 +65,13 @@ EOF
         }
 
         stage('Host debug') {
+
+            sh '''
+    HOSTNAME=$(hostname)
+    echo "HOST=$HOSTNAME"
+'''
+
+
             steps {
                 sh '''
                     echo "=== HOST DEBUG ==="
@@ -58,6 +89,13 @@ EOF
         }
 
         stage('Run JJB') {
+
+            sh '''
+    HOSTNAME=$(hostname)
+    echo "HOST=$HOSTNAME"
+'''
+
+
             steps {
                 sh '''
 rm -rf /tmp/jjb_workspace
