@@ -33,50 +33,34 @@ EOF
         }
     }
 
-    stage('Debug workspace (host)') {
-        sh '''
-            echo "=== HOST WORKSPACE ==="
-            pwd
-            ls -R
-            echo "=== JOBS DIR ==="
-            ls -la jobs
-        '''
-    }
-
     stage('Debug host config') {
         sh '''
-        echo "=== HOST ==="
-        pwd
-        ls -la config.ini
-        cat config.ini
-    '''
+echo "HOST CHECK:"
+ls -la $WORKSPACE
+ls -la $WORKSPACE/config.ini
+cat $WORKSPACE/config.ini
+'''
     }
 
-    stage('Run Jenkins Job Builder') {
+    stage('Run JJB') {
         sh """
 docker run --rm \
-  -v ${env.WORKSPACE}:/workspace \
-  -w /workspace \
+  -v ${env.WORKSPACE}:${env.WORKSPACE} \
+  -w ${env.WORKSPACE} \
   python:3.10 bash -c '
     set -e
 
-    echo "=== INSIDE CONTAINER ==="
+    echo "=== DEBUG ==="
     pwd
-    ls -R
+    ls -la
 
-    echo "=== PYTHON VERSION ==="
-    python --version
-
-    echo "=== INSTALL JJB ==="
-    pip install --no-cache-dir jenkins-job-builder==5.0.3
-
-    echo "=== JJB VERSION ==="
-    jenkins-jobs --version
-
-    echo "=== VALIDATE CONFIG ==="
+    echo "=== CONFIG CHECK ==="
+    ls -la config.ini
     cat config.ini
 
-    echo "=== RUN UPDATE ==="
+    pip install --no-cache-dir jenkins-job-builder==5.0.3
+    jenkins-jobs --version
+
     jenkins-jobs --conf config.ini update jobs/
   '
 """
