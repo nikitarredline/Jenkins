@@ -1,29 +1,26 @@
 import groovy.transform.Field
 
 @Field
-def JENKINS_URL = 'http://89.124.113.71/jenkins/'
+def JOBS_DIR = "jobs"
 
 node() {
 
-    currentBuild.description = "<p style='color: red;'>Jobs uploader (JJB)</p>"
-
     stage('Checkout') {
-        checkout scm
+        checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                userRemoteConfigs: [[url: 'https://github.com/nikitarredline/Jenkins']]
+        ])
     }
 
     stage('Create config.ini') {
-        withCredentials([usernamePassword(
-                credentialsId: "jenkins",
-                usernameVariable: "USER",
-                passwordVariable: "PASS"
-        )]) {
-
+        withCredentials([usernamePassword(credentialsId: "jenkins", usernameVariable: "user", passwordVariable: 'pass')]) {
             sh '''
-cat > config.ini <<EOF
+cat > config.ini << EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
-user=$USER
-password=$PASS
+user=$user
+password=$pass
 
 [job_builder]
 recursive=True
@@ -33,36 +30,39 @@ EOF
         }
     }
 
-    stage('Debug host config') {
+    stage('Debug host') {
         sh '''
-echo "HOST CHECK:"
+echo "WORKSPACE=$WORKSPACE"
 ls -la $WORKSPACE
+ls -la $WORKSPACE/jobs
 ls -la $WORKSPACE/config.ini
-cat $WORKSPACE/config.ini
 '''
     }
 
     stage('Run JJB') {
-        sh """
+        sh '''
 docker run --rm \
-  -v ${env.WORKSPACE}:${env.WORKSPACE} \
-  -w ${env.WORKSPACE} \
-  python:3.10 bash -c '
+  -v $WORKSPACE:/workspace \
+  -w /workspace \
+  python:3.10 bash -c "
     set -e
 
-    echo "=== DEBUG ==="
+    echo '=== INSIDE CONTAINER ==='
     pwd
     ls -la
-
-    echo "=== CONFIG CHECK ==="
     ls -la config.ini
-    cat config.ini
+    ls -la jobs
 
+    echo '=== PYTHON ==='
+    python --version
+
+    echo '=== INSTALL ==='
     pip install --no-cache-dir jenkins-job-builder==5.0.3
-    jenkins-jobs --version
 
+    echo '=== RUN JJB ==='
+    jenkins-jobs --version
     jenkins-jobs --conf config.ini update jobs/
-  '
-"""
+"
+'''
     }
 }
