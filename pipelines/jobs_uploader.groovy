@@ -7,21 +7,9 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    echo "HOST=$(hostname)"
                     echo "WORKSPACE=$WORKSPACE"
                     ls -la $WORKSPACE
-                '''
-            }
-        }
-
-        stage('Checkout + VERIFY') {
-            steps {
-                checkout scm
-
-                sh '''
-                    set -e
-                    echo "=== CHECK JOBS ON HOST ==="
-                    ls -la jobs || echo "NO JOBS ON HOST"
+                    ls -la $WORKSPACE/jobs
                 '''
             }
         }
@@ -33,6 +21,7 @@ pipeline {
                         usernameVariable: 'JENKINS_USER',
                         passwordVariable: 'JENKINS_PASS'
                 )]) {
+
                     sh '''
 cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
@@ -44,10 +33,19 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
-
-ls -la $WORKSPACE/config.ini
                     '''
                 }
+            }
+        }
+
+        stage('VERIFY DOCKER MOUNT') {
+            steps {
+                sh '''
+                    set -e
+                    docker run --rm \
+                        -v $WORKSPACE:/workspace \
+                        alpine ls -R /workspace
+                '''
             }
         }
 
@@ -56,8 +54,6 @@ ls -la $WORKSPACE/config.ini
                 sh '''
                     set -e
 
-                    echo "=== CHECK INSIDE CONTAINER ==="
-
                     docker run --rm \
                         -v $WORKSPACE:/workspace \
                         -w /workspace \
@@ -65,17 +61,19 @@ ls -la $WORKSPACE/config.ini
                         bash -c "
                             set -e
                             echo 'INSIDE:'
-                            ls -la /workspace
+                            ls -la
+
+                            echo 'JOBS CHECK:'
+                            ls -la jobs
 
                             echo 'PYTHON:'
                             python --version
 
                             echo 'JJB:'
-                            which jenkins-jobs
                             jenkins-jobs --version
 
-                            echo 'RUN UPDATE:'
-                            jenkins-jobs --conf /workspace/config.ini update /workspace/jobs
+                            echo 'RUN:'
+                            jenkins-jobs --conf config.ini update jobs/
                         "
                 '''
             }
