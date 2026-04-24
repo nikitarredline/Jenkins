@@ -15,7 +15,7 @@ pipeline {
 
         stage('Create config.ini') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins', variable: 'JENKINS_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'jenkins', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
                     sh '''
                         set -e
 
