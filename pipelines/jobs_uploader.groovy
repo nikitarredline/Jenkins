@@ -48,17 +48,16 @@ EOF
             }
         }
 
-        stages {
-            stage('Run JJB') {
-                steps {
-                    sh '''
+        stage('Run JJB') {
+            steps {
+                sh '''
                     set -e
+
                     python --version
                     jenkins-jobs --version
 
                     jenkins-jobs --conf config.ini update jobs/
                 '''
-                }
             }
         }
     }
