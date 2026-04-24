@@ -1,14 +1,7 @@
 - job-template:
     name: jobs_uploader
-    description: "<h3 style='color: red;'>jobs uploader</h3>"
     project-type: pipeline
-    concurrent: false
-    parameters:
-      - string:
-          name: REFSPEC
-          description: "Branch name"
-          default: master
     pipeline-scm:
       scm:
         - uploader_scm
-      script-path: ./pipelines/jobs_uploader.groovy
+      script-path: pipelines/jobs_uploader.groovy
