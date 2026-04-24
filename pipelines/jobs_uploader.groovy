@@ -48,25 +48,22 @@ EOF
                 sh '''
             set -e
 
-            WS=/var/jenkins_home/workspace/jobs_uploader
-
-            echo "=== HOST WORKSPACE ==="
-            ls -la $WS
+            echo "=== JENKINS WORKSPACE ==="
+            echo $WORKSPACE
+            ls -la $WORKSPACE
 
             echo "=== DOCKER RUN ==="
 
             docker run --rm \
-              -v $WS:/workspace \
-              -w /workspace \
+              -v $WORKSPACE:$WORKSPACE \
+              -w $WORKSPACE \
               python:3.10 bash -c '
                 set -e
 
                 echo "INSIDE CONTAINER"
-                pwd
                 ls -la
 
                 echo "CONFIG CHECK"
-                ls -la config.ini
                 cat config.ini
 
                 echo "JOBS"
