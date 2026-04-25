@@ -5,7 +5,23 @@
     parameters:
       - string:
           name: REFSPEC
-          default: main
+          default: homework_4
+
+      - string:
+          name: SELENOID_URL
+          default: http://89.124.113.71/wd/hub
+
+      - string:
+          name: BROWSER
+          default: chrome
+
+      - string:
+          name: BROWSER_VERSION
+          default: 128.0
+
+      - string:
+          name: DEVICE_NAME
+          default: ""
 
     pipeline-scm:
       scm:
