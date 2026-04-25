@@ -1,12 +1,16 @@
 pipeline {
     agent any
 
+    environment {
+        JJB_CONTAINER = "jenkins-agent-python:1.0"
+        WORKSPACE_DIR = "/var/jenkins_home/workspace/jobs_uploader"
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/nikitarredline/RestAssuredHomework',
-                        branch: 'main'
+                checkout scm
             }
         }
 
@@ -14,29 +18,57 @@ pipeline {
             steps {
                 sh '''
                     set -e
+                    echo "=== WORKSPACE ==="
+                    pwd
+                    ls -la
 
-                    echo "=== WORKSPACE (Jenkins) ==="
-                    echo $WORKSPACE
-                    ls -la $WORKSPACE
-
-                    echo "=== CHECK POM ==="
-                    find $WORKSPACE -name pom.xml || true
+                    echo "=== JOBS DIR ==="
+                    ls -la jobs || true
                 '''
             }
         }
 
-        stage('Run API tests (Docker Maven)') {
+        stage('Generate config.ini') {
+            steps {
+                withCredentials([string(credentialsId: 'jenkins_pass', variable: 'JENKINS_PASS')]) {
+                    sh '''
+                        set -e
+                        cat > config.ini <<EOF
+[job_builder]
+keep_descriptions=False
+recursive=True
+
+[jenkins]
+user=admin
+password=$JENKINS_PASS
+url=http://jenkins:8080
+EOF
+                    '''
+                }
+            }
+        }
+
+        stage('Run Jenkins Job Builder') {
             steps {
                 sh '''
                     set -e
 
-                    echo "RUNNING MAVEN IN DOCKER"
+                    echo "RUNNING JJB INSIDE DOCKER"
 
                     docker run --rm \
-                        -v $WORKSPACE:/app \
-                        -w /app \
-                        maven:3.9.9-eclipse-temurin-17 \
-                        mvn clean test
+                        -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
+                        -w /workspace \
+                        jenkins-agent-python:1.0 \
+                        bash -c "
+                            set -e
+                            echo INSIDE CONTAINER
+                            pwd
+                            ls -la jobs
+
+                            jenkins-jobs --version
+
+                            jenkins-jobs --conf config.ini update jobs/
+                        "
                 '''
             }
         }
@@ -46,13 +78,11 @@ pipeline {
         always {
             echo "PIPELINE FINISHED"
         }
-
-        failure {
-            echo "BUILD FAILED"
-        }
-
         success {
-            echo "BUILD SUCCESS"
+            echo "JOB SUCCESS"
+        }
+        failure {
+            echo "JOB FAILED"
         }
     }
 }
