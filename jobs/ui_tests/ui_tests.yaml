@@ -1,0 +1,11 @@
+- job:
+    name: ui_tests
+    project-type: pipeline
+
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/nikitarredline/JavaQAProfessional
+            branches:
+              - main
+      script-path: Jenkinsfile

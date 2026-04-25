@@ -3,3 +3,4 @@
     jobs:
       - jobs_uploader
       - api_tests
+      - ui_tests

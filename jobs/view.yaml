@@ -9,3 +9,4 @@
     view-type: list
     job-name:
       - api_tests
+      - ui_tests
