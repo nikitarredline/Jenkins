@@ -1,19 +1,26 @@
 - job-template:
-    name: api_tests
-    project-type: freestyle
+      name: api_tests
+      project-type: freestyle
 
-    scm:
-      - api_tests_scm
+      scm:
+          - api_tests_scm
 
-    builders:
-      - shell: |
-          set -e
-
-          echo "WORKSPACE = $WORKSPACE"
-          ls -la "$WORKSPACE"
-
-          docker run --rm \
-            -v /var/jenkins_home/workspace/api_tests:/workspace \
-            -w /workspace \
-            maven:3.9.9-eclipse-temurin-17 \
-            mvn clean test
+      builders:
+          - shell: |
+                set -e
+                
+                echo "===== DEBUG ====="
+                echo "HOST WORKSPACE:"
+                ls -la /var/jenkins_home/workspace/api_tests
+                
+                echo "===== DOCKER VIEW ====="
+                docker run --rm \
+                  -v /var/jenkins_home/workspace/api_tests:/workspace \
+                  alpine ls -la /workspace
+                
+                echo "===== RUN TESTS ====="
+                docker run --rm \
+                  -v /var/jenkins_home/workspace/api_tests:/workspace \
+                  -w /workspace \
+                  maven:3.9.9-eclipse-temurin-17 \
+                  mvn -f /workspace/pom.xml clean test
