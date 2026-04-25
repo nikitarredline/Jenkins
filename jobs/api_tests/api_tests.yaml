@@ -1,18 +1,10 @@
 - job:
     name: api_tests
     project-type: pipeline
-
-    scm:
-      - git:
-          url: https://github.com/nikitarredline/RestAssuredHomework
-          branches:
-            - main
-
-    definition:
-      cpsScm:
-        scm:
-          - git:
-              url: https://github.com/nikitarredline/RestAssuredHomework
-              branches:
-                - main
-        script-path: Jenkinsfile
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/...
+            branches:
+              - main
+      script-path: Jenkinsfile
