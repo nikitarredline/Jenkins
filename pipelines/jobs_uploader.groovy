@@ -55,6 +55,17 @@ EOF
             }
         }
 
+        stage('DEBUG') {
+            steps {
+                sh '''
+            set -e
+            echo "WORKSPACE: $WORKSPACE"
+            ls -la $WORKSPACE
+            find $WORKSPACE -name pom.xml || true
+        '''
+            }
+        }
+
         stage('RUN JJB') {
             steps {
                 sh '''
