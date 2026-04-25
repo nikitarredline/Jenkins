@@ -2,10 +2,15 @@
     name: ui_tests
     project-type: pipeline
 
+    parameters:
+      - string:
+          name: REFSPEC
+          default: main
+
     pipeline-scm:
       scm:
         - git:
             url: https://github.com/nikitarredline/JavaQAProfessional
             branches:
-              - main
+              - $REFSPEC
       script-path: Jenkinsfile
