@@ -1,0 +1,61 @@
+version: '3.7'
+
+services:
+  selenoid1:
+    image: aerokube/selenoid:1.11.3
+    hostname: selenoid1
+    networks:
+      - ci-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ selenoid_path }}/browsers.json:/etc/selenoid/browsers.json:ro
+    command: -container-network ci-network -limit 10
+    environment:
+      - STARTUP_TIMEOUT=60
+
+  selenoid2:
+    image: aerokube/selenoid:1.11.3
+    hostname: selenoid2
+    networks:
+      - ci-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ selenoid_path }}/browsers.json:/etc/selenoid/browsers.json:ro
+    command: -container-network ci-network -limit 10
+    environment:
+      - STARTUP_TIMEOUT=60
+
+  ggr:
+    image: aerokube/ggr:1.7.2
+    hostname: ggr
+    networks:
+      - ci-network
+    volumes:
+      - {{ selenoid_path }}/grid-router:/etc/grid-router:ro
+    command: -guests-allowed -guests-quota "test" verbose
+    depends_on:
+      - selenoid1
+      - selenoid2
+
+  ggr_ui:
+    image: aerokube/ggr-ui:1.2.0
+    hostname: ggr_ui
+    networks:
+      - ci-network
+    depends_on:
+      - ggr
+    volumes:
+      - {{ selenoid_path }}/grid-router:/etc/grid-router:ro
+
+  selenoid_ui:
+    image: aerokube/selenoid-ui:1.10.11
+    hostname: selenoid_ui
+    depends_on:
+      - ggr_ui
+    networks:
+      - ci-network
+    command: --selenoid-uri http://ggr_ui:8888
+
+networks:
+  ci-network:
+    external: true

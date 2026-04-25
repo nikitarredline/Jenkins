@@ -1,0 +1,26 @@
+server {
+    listen 80;
+
+    # Jenkins
+    location /jenkins/ {
+        proxy_pass http://jenkins:8080/jenkins/;
+    }
+
+    # Selenoid UI
+    location /selenoid/ {
+        proxy_pass http://selenoid_ui:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # GGR (WebDriver)
+    location /wd/hub/ {
+        proxy_pass http://ggr:4444;
+    }
+
+    # Registry
+    location /registry/ {
+        proxy_pass http://registry:5005/;
+    }
+}

@@ -1,0 +1,54 @@
+---
+- name: Create browsers.json for selenoid
+  template:
+    src: ./templates/browsers.json.j2
+    dest: /root/selenoid/browsers.json
+  vars:
+    chrome_version1: 128.0
+    chrome_version2: 127.0
+  tags: selenoid_config
+
+- name: Pull docker images for normal and mobile browsers
+  community.docker.docker_image_pull:
+    name: "selenoid/{{ item }}"
+    pull: "not_present"
+  loop:
+    - chrome:128.0
+    - chrome:127.0
+    - vnc_chrome:128.0
+    - vnc_chrome:127.0
+  tags: selenoid_config
+
+- name: Create CI network
+  community.docker.docker_network:
+    name: ci-network
+    state: present
+
+- name: Create docker-compose.yaml for selenoid
+  template:
+    src: ./templates/docker_compose.yaml.j2
+    dest: /root/selenoid/docker-compose.yaml
+  vars:
+    selenoid_path: /root/selenoid
+  tags: selenoid_config
+
+- name: Create grid-router folder
+  file:
+    path: /root/selenoid/grid-router/quota
+    state: directory
+  tags: selenoid_config
+
+- name: Create quota file for ggr
+  template:
+    src: ./templates/test.xml.j2
+    dest: /root/selenoid/grid-router/quota/test.xml
+  vars:
+    browser_version1: 128.0
+    browser_version2: 127.0
+  tags: selenoid_config
+
+- name: Running selenoid via docker-compose orkestration
+  community.docker.docker_compose_v2:
+    project_src: /root/selenoid
+    state: present
+  tags: selenoid_config

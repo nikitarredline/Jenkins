@@ -1,0 +1,26 @@
+---
+- name: Create jenkins directory
+  file:
+    path: /root/jenkins
+    state: directory
+
+- name: Create registry directory
+  file:
+    path: /root/registry
+    state: directory
+
+- name: Copy Dockerfile for Jenkins
+  copy:
+    src: Dockerfile
+    dest: /root/jenkins/Dockerfile
+
+- name: Render docker-compose for Jenkins
+  template:
+    src: docker-compose.yaml.j2
+    dest: /root/jenkins/docker-compose.yaml
+
+- name: Run Jenkins stack
+  community.docker.docker_compose_v2:
+    project_src: /root/jenkins
+    state: present
+    recreate: always

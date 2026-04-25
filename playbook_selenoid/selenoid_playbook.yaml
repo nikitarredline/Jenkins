@@ -1,0 +1,9 @@
+- name: Setup selenoid
+  hosts: selenoid
+  become: true
+  remote_user: root
+  roles:
+    - docker
+    - docker-compose
+    - common
+    - rendering_configs

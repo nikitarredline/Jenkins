@@ -1,0 +1,23 @@
+---
+- name: Add user in docker group
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: true
+
+- name: Change docker.sock permissions
+  file:
+    path: /var/run/docker.sock
+    state: file
+    mode: "0666"
+
+- name: Create workdir
+  become: yes
+  file:
+    path: /root/selenoid
+    state: directory
+
+- name: Create CI network
+  community.docker.docker_network:
+    name: ci-network
+    state: present

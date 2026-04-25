@@ -1,0 +1,41 @@
+{
+  "chrome": {
+    "default": "{{ chrome_version1 }}",
+    "versions": {
+      "{{ chrome_version1 }}": {
+        "image": "selenoid/chrome:{{ chrome_version1 }}",
+        "port": "4444",
+        "path": "/"
+      },
+      "{{ chrome_version2 }}": {
+        "image": "selenoid/chrome:{{ chrome_version2 }}",
+        "port": "4444",
+        "path": "/"
+      },
+      "{{ chrome_version1 }}_mobile": {
+        "image": "selenoid/vnc_chrome:{{ chrome_version1 }}",
+        "port": "4444",
+        "path": "/",
+        "devices": [
+          "iPhoneX",
+          "iPhone8",
+          "iPhone8Plus",
+          "GalaxyS5",
+          "Pixel2"
+        ]
+      },
+      "{{ chrome_version2 }}_mobile": {
+        "image": "selenoid/vnc_chrome:{{ chrome_version2 }}",
+        "port": "4444",
+        "path": "/",
+        "devices": [
+          "iPhoneX",
+          "iPhone8",
+          "iPhone8Plus",
+          "GalaxyS5",
+          "Pixel2"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+- name: Setup nginx gateway
+  hosts: all
+  become: true
+  roles:
+    - nginx

@@ -1,0 +1,5 @@
+- name: Setup Jenkins and Registry
+  hosts: all
+  become: true
+  roles:
+    - jenkins
