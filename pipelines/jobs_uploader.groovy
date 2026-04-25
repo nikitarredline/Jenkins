@@ -1,74 +1,80 @@
 pipeline {
     agent any
 
-    environment {
-        JJB_CONTAINER = "jenkins-agent-python:1.0"
-        WORKSPACE_DIR = "/var/jenkins_home/workspace/jobs_uploader"
-    }
-
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Debug workspace') {
+        stage('DEBUG HOST') {
             steps {
                 sh '''
                     set -e
-                    echo "=== WORKSPACE ==="
-                    pwd
-                    ls -la
-
-                    echo "=== JOBS DIR ==="
-                    ls -la jobs || true
+                    echo "WORKSPACE=$WORKSPACE"
+                    ls -la $WORKSPACE
+                    ls -la $WORKSPACE/jobs || true
                 '''
             }
         }
 
-        stage('Generate config.ini') {
+        stage('Create config.ini') {
             steps {
-                withCredentials([string(credentialsId: 'jenkins_pass', variable: 'JENKINS_PASS')]) {
+                withCredentials([usernamePassword(
+                        credentialsId: 'jenkins',
+                        usernameVariable: 'JENKINS_USER',
+                        passwordVariable: 'JENKINS_PASS'
+                )]) {
+
                     sh '''
                         set -e
-                        cat > config.ini <<EOF
-[job_builder]
-keep_descriptions=False
-recursive=True
 
+                        cat > $WORKSPACE/config.ini <<EOF
 [jenkins]
-user=admin
-password=$JENKINS_PASS
-url=http://jenkins:8080
+url=http://89.124.113.71/jenkins/
+user=${JENKINS_USER}
+password=${JENKINS_PASS}
+
+[job_builder]
+recursive=True
+keep_descriptions=False
 EOF
+
+                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('Run Jenkins Job Builder') {
+        stage('VERIFY DOCKER ACCESS') {
+            steps {
+                sh '''
+                    set -e
+                    echo "Testing mount..."
+
+                    docker run --rm \
+                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      alpine ls -la /workspace
+                '''
+            }
+        }
+
+        stage('RUN JJB') {
             steps {
                 sh '''
                     set -e
 
-                    echo "RUNNING JJB INSIDE DOCKER"
-
                     docker run --rm \
-                        -v /var/jenkins_home/workspace/jobs_uploader:/workspace \
-                        -w /workspace \
-                        jenkins-agent-python:1.0 \
-                        bash -c "
-                            set -e
-                            echo INSIDE CONTAINER
-                            pwd
-                            ls -la jobs
+                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -w /workspace \
+                      jenkins-agent-python:1.0 bash -c "
+                        set -e
 
-                            jenkins-jobs --version
+                        echo INSIDE CONTAINER
+                        pwd
+                        ls -la jobs
 
-                            jenkins-jobs --conf config.ini update jobs/
-                        "
+                        python --version
+                        jenkins-jobs --version
+
+                        jenkins-jobs --conf config.ini update jobs/
+                      "
                 '''
             }
         }
@@ -76,13 +82,7 @@ EOF
 
     post {
         always {
-            echo "PIPELINE FINISHED"
-        }
-        success {
-            echo "JOB SUCCESS"
-        }
-        failure {
-            echo "JOB FAILED"
+            sh 'echo PIPELINE FINISHED'
         }
     }
 }
