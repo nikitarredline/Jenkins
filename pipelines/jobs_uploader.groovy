@@ -8,8 +8,8 @@ pipeline {
                 sh '''
                     set -e
                     echo "WORKSPACE=$WORKSPACE"
-                    ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs || true
+                    ls -la "$WORKSPACE"
+                    ls -la "$WORKSPACE/jobs" || true
                 '''
             }
         }
@@ -25,7 +25,7 @@ pipeline {
                     sh '''
                         set -e
 
-                        cat > $WORKSPACE/config.ini <<EOF
+                        cat > "$WORKSPACE/config.ini" <<EOF
 [jenkins]
 url=http://89.124.113.71/jenkins/
 user=${JENKINS_USER}
@@ -36,7 +36,8 @@ recursive=True
 keep_descriptions=False
 EOF
 
-                        ls -la $WORKSPACE/config.ini
+                        echo "config.ini created:"
+                        ls -la "$WORKSPACE/config.ini"
                     '''
                 }
             }
@@ -49,7 +50,7 @@ EOF
                     echo "Testing mount..."
 
                     docker run --rm \
-                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -v "$WORKSPACE:/workspace" \
                       alpine ls -la /workspace
                 '''
             }
@@ -58,11 +59,11 @@ EOF
         stage('DEBUG') {
             steps {
                 sh '''
-            set -e
-            echo "WORKSPACE: $WORKSPACE"
-            ls -la $WORKSPACE
-            find $WORKSPACE -name pom.xml || true
-        '''
+                    set -e
+                    echo "WORKSPACE: $WORKSPACE"
+                    ls -la "$WORKSPACE"
+                    find "$WORKSPACE" -name pom.xml || true
+                '''
             }
         }
 
@@ -72,7 +73,7 @@ EOF
                     set -e
 
                     docker run --rm \
-                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
+                      -v "$WORKSPACE:/workspace" \
                       -w /workspace \
                       jenkins-agent-python:1.0 bash -c "
                         set -e
