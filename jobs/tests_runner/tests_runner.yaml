@@ -1,0 +1,28 @@
+- job:
+    name: tests_runner
+    project-type: pipeline
+
+    parameters:
+      - text:
+          name: YAML_CONFIG
+          default: |
+            TESTS_TYPE:
+              - ui
+              - api
+            BASE_URL: https://otus.ru
+            SELENOID_URL: http://89.124.113.71/wd/hub
+            TESTS_VERSION:
+              - type: ui
+                version: 1.0.0
+              - type: api
+                version: 1.0.0
+            BROWSER: chrome
+            BROWSER_VERSION: 128.0
+
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/nikitarredline/Jenkins
+            branches:
+              - main
+      script-path: Jenkinsfile

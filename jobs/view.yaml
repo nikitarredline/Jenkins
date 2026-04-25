@@ -10,3 +10,4 @@
     job-name:
       - api_tests
       - ui_tests
+      - tests_runner

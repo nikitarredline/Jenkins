@@ -2,5 +2,6 @@
     name: test_project
     jobs:
       - jobs_uploader
+      - tests_runner
       - api_tests
       - ui_tests
