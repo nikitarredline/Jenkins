@@ -4,4 +4,4 @@
       - git:
           url: https://github.com/nikitarredline/RestAssuredHomework
           branches:
-            - '*/main'
+            - main

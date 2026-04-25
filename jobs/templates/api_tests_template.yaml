@@ -1,18 +1,16 @@
 - job-template:
-          name: api_tests
-          project-type: freestyle
+    name: api_tests
+    project-type: freestyle
 
-          scm:
-                  - api_tests_scm
+    scm:
+      - api_tests_scm
 
-          builders:
-                  - shell: |
-                            set -e
-                            
-                            echo "===== RUN TESTS ====="
-                            
-                            docker run --rm \
-                              -v /root/jenkins_home/workspace/api_tests:/workspace \
-                              -w /workspace \
-                              maven:3.9.9-eclipse-temurin-21 \
-                              mvn clean test
+    builders:
+      - shell: |
+          set -e
+
+          docker run --rm \
+            -v "$WORKSPACE:/workspace" \
+            -w /workspace \
+            maven:3.9.9-eclipse-temurin-21 \
+            mvn clean test
