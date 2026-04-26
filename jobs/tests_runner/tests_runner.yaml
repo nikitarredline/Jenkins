@@ -17,7 +17,7 @@
                 version: 1.0.0
               - type: api
                 version: 1.0.0
-            - type: mobile
+              - type: mobile
                 version: 1.0.0
             BROWSER: chrome
             BROWSER_VERSION: 128.0
