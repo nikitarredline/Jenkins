@@ -10,4 +10,5 @@
     job-name:
       - api_tests
       - ui_tests
+      - mobile_tests
       - tests_runner

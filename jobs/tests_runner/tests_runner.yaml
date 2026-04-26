@@ -9,6 +9,7 @@
             TESTS_TYPE:
               - ui
               - api
+              - mobile
             BASE_URL: https://otus.ru
             SELENOID_URL: http://89.124.113.71/wd/hub
             TESTS_VERSION:

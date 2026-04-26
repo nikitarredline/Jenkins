@@ -5,3 +5,4 @@
       - tests_runner
       - api_tests
       - ui_tests
+      - mobile_tests

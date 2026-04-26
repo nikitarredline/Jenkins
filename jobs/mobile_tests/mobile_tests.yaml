@@ -1,0 +1,11 @@
+- job:
+    name: mobile_tests
+    project-type: pipeline
+
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/nikitarredline/Appium
+            branches:
+              - main
+      script-path: Jenkinsfile
