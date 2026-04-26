@@ -15,31 +15,6 @@
     <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
       <abortPrevious>false</abortPrevious>
     </org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty>
-    <hudson.model.ParametersDefinitionProperty>
-      <parameterDefinitions>
-        <hudson.model.TextParameterDefinition>
-          <name>YAML_CONFIG</name>
-          <description></description>
-          <defaultValue>TESTS_TYPE:
-  - ui
-  - api
-  - mobile
-BASE_URL: https://otus.ru
-SELENOID_URL: http://89.124.113.71/wd/hub
-TESTS_VERSION:
-  - type: ui
-    version: 1.0.0
-  - type: api
-    version: 1.0.0
-  - type: mobile
-    version: 1.0.0
-BROWSER: chrome
-BROWSER_VERSION: 128.0
-</defaultValue>
-          <trim>false</trim>
-        </hudson.model.TextParameterDefinition>
-      </parameterDefinitions>
-    </hudson.model.ParametersDefinitionProperty>
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@4285.v8df38f05c3c5">
     <scm class="hudson.plugins.git.GitSCM" plugin="git@5.10.1">
@@ -48,7 +23,7 @@ BROWSER_VERSION: 128.0
         <hudson.plugins.git.UserRemoteConfig>
           <name>origin</name>
           <refspec>+refs/heads/*:refs/remotes/origin/*</refspec>
-          <url>https://github.com/nikitarredline/Jenkins</url>
+          <url>https://github.com/nikitarredline/Appium</url>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>
