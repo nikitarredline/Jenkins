@@ -3,17 +3,6 @@ pipeline {
 
     stages {
 
-        stage('DEBUG HOST') {
-            steps {
-                sh '''
-                    set -e
-                    echo "WORKSPACE=$WORKSPACE"
-                    ls -la $WORKSPACE
-                    ls -la $WORKSPACE/jobs || true
-                '''
-            }
-        }
-
         stage('Create config.ini') {
             steps {
                 withCredentials([usernamePassword(
@@ -35,38 +24,12 @@ password=${JENKINS_PASS}
 recursive=True
 keep_descriptions=False
 EOF
-
-                        ls -la $WORKSPACE/config.ini
                     '''
                 }
             }
         }
 
-        stage('VERIFY DOCKER ACCESS') {
-            steps {
-                sh '''
-                    set -e
-                    echo "Testing mount..."
-
-                    docker run --rm \
-                      -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
-                      alpine ls -la /workspace
-                '''
-            }
-        }
-
-        stage('DEBUG') {
-            steps {
-                sh '''
-            set -e
-            echo "WORKSPACE: $WORKSPACE"
-            ls -la $WORKSPACE
-            find $WORKSPACE -name pom.xml || true
-        '''
-            }
-        }
-
-        stage('RUN JJB') {
+        stage('Run JJB') {
             steps {
                 sh '''
                     set -e
@@ -74,16 +37,9 @@ EOF
                     docker run --rm \
                       -v /root/jenkins_home/workspace/jobs_uploader:/workspace \
                       -w /workspace \
-                      jenkins-agent-python:1.0 bash -c "
+                      jenkins-agent-python:1.0 \
+                      bash -c "
                         set -e
-
-                        echo INSIDE CONTAINER
-                        pwd
-                        ls -la jobs
-
-                        python --version
-                        jenkins-jobs --version
-
                         jenkins-jobs --conf config.ini update jobs/
                       "
                 '''
@@ -93,7 +49,7 @@ EOF
 
     post {
         always {
-            sh 'echo PIPELINE FINISHED'
+            echo "PIPELINE FINISHED"
         }
     }
 }

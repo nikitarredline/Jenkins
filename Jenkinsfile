@@ -20,27 +20,37 @@ pipeline {
             }
         }
 
-        stage('Run UI tests') {
-            when {
-                expression { params.YAML_CONFIG.contains('ui') }
-            }
+        stage('Run tests in parallel') {
             steps {
                 script {
-                    build job: 'ui_tests', parameters: [
-                        string(name: 'SELENOID_URL', value: env.SELENOID_URL),
-                        string(name: 'BROWSER', value: env.BROWSER),
-                        string(name: 'BROWSER_VERSION', value: env.BROWSER_VERSION)
-                    ]
-                }
-            }
-        }
+                    def branches = [:]
 
-        stage('Run API tests') {
-            when {
-                expression { params.YAML_CONFIG.contains('api') }
-            }
-            steps {
-                build job: 'api_tests'
+                    if (params.YAML_CONFIG.contains('ui')) {
+                        branches['UI'] = {
+                            build job: 'ui_tests', parameters: [
+                                string(name: 'SELENOID_URL', value: env.SELENOID_URL),
+                                string(name: 'BROWSER', value: env.BROWSER),
+                                string(name: 'BROWSER_VERSION', value: env.BROWSER_VERSION)
+                            ]
+                        }
+                    }
+
+                    if (params.YAML_CONFIG.contains('api')) {
+                        branches['API'] = {
+                            build job: 'api_tests'
+                        }
+                    }
+
+                    if (params.YAML_CONFIG.contains('mobile')) {
+                        branches['MOBILE'] = {
+                            build job: 'mobile_tests', parameters: [
+                                string(name: 'APPIUM_SERVER', value: env.SELENOID_URL)
+                            ]
+                        }
+                    }
+
+                    parallel branches
+                }
             }
         }
     }
